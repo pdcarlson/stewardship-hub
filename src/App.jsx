@@ -1,6 +1,6 @@
 // /src/App.jsx
 // this file now handles all the application routing.
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 import LoginPage from './pages/LoginPage';
@@ -21,7 +21,7 @@ const HomeRedirect = () => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         {/* public route */}
         <Route path="/login" element={<LoginPage />} />
@@ -36,7 +36,7 @@ function App() {
         {/* add a fallback for any other path */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 
