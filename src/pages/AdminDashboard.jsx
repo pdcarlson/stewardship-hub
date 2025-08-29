@@ -1,9 +1,9 @@
-// /pages/AdminDashboard.jsx
-// we've added state for the modal and a function to refresh data.
+// /src/pages/AdminDashboard.jsx
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getSemesterConfig, getPurchases } from '../lib/appwrite';
 import { calculateBudgetMetrics } from '../lib/calculations';
+
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
 import Modal from '../components/ui/Modal';
@@ -17,12 +17,13 @@ const AdminDashboard = () => {
   const [metrics, setMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // state to manage the visibility of the new purchase modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // wrap data fetching in usecallback to prevent re-creation
+  // wrap data fetching in usecallback to prevent it from being recreated on every render
   const fetchData = useCallback(async () => {
     try {
-      // don't set loading to true on refetch, to avoid screen flicker
       const [configData, purchasesData] = await Promise.all([
         getSemesterConfig(),
         getPurchases(),
@@ -45,15 +46,16 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  // fetch data when the component first loads
   useEffect(() => {
     setIsLoading(true);
     fetchData();
   }, [fetchData]);
 
-  // this function will be called by the form on a successful submission
+  // this function is passed to the form; it closes the modal and refreshes the data
   const handlePurchaseSuccess = () => {
-    setIsModalOpen(false); // close the modal
-    fetchData(); // refetch all data to update the dashboard
+    setIsModalOpen(false);
+    fetchData();
   };
 
   if (isLoading) {
@@ -65,19 +67,25 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Modal /* ... */ >
+      {/* the modal is now part of the component tree, controlled by ismodalopen state */}
+      <Modal 
+        title="Log a New Purchase" 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+      >
         <PurchaseForm onSuccess={handlePurchaseSuccess} />
       </Modal>
 
-      <div className="min-h-screen bg-light"> {/* updated background color */}
-        {/* updated header styles */}
+      <div className="min-h-screen bg-light">
         <header className="bg-secondary shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
+              {/* updated text colors for better readability */}
               <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
             <div className="flex items-center space-x-4">
+              {/* the button now opens the modal when clicked */}
               <Button onClick={() => setIsModalOpen(true)}>New Purchase</Button>
               <Button onClick={logout} variant="secondary">Logout</Button>
             </div>
