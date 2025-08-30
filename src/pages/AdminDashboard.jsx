@@ -77,7 +77,7 @@ const AdminDashboard = () => {
       </Modal>
 
       <div className="min-h-screen bg-light">
-        <header className="bg-secondary shadow-sm">
+        <header className="bg-[#1f2937] shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
               {/* updated text colors for better readability */}
