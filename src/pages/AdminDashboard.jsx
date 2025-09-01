@@ -40,7 +40,7 @@ const AdminDashboard = () => {
         setMetrics(calculatedMetrics);
       }
     } catch (err) {
-      setError('failed to fetch dashboard data. please make sure semester config is set.');
+      setError('Failed to fetch dashboard data. Please make sure semester config is set.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
   };
 
   if (isLoading) {
-    return <div className="p-8">loading dashboard...</div>;
+    return <div className="p-8">Loading Dashboard...</div>;
   }
   if (error) {
     return <div className="p-8 text-red-500">{error}</div>;
@@ -71,7 +71,7 @@ const AdminDashboard = () => {
     <>
       {/* purchase modal */}
       <Modal 
-        title="log a new purchase" 
+        title="Log a New Purchase" 
         isOpen={isPurchaseModalOpen} 
         onClose={() => setIsPurchaseModalOpen(false)}
       >
@@ -80,7 +80,7 @@ const AdminDashboard = () => {
       
       {/* config modal */}
       <Modal 
-        title="semester settings"
+        title="Semester Settings"
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
       >
@@ -92,13 +92,13 @@ const AdminDashboard = () => {
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
               {/* updated text colors for better readability */}
-              <h1 className="text-xl font-semibold text-white">admin dashboard</h1>
-              <p className="text-sm text-gray-300">welcome, {user?.name}!</p>
+              <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
+              <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button onClick={() => setIsConfigModalOpen(true)}>settings</Button>
-              <Button onClick={() => setIsPurchaseModalOpen(true)}>new purchase</Button>
-              <Button onClick={logout} variant="secondary">logout</Button>
+              <Button onClick={() => setIsConfigModalOpen(true)}>Settings</Button>
+              <Button onClick={() => setIsPurchaseModalOpen(true)}>New Purchase</Button>
+              <Button onClick={logout} variant="secondary">Logout</Button>
             </div>
           </div>
         </header>

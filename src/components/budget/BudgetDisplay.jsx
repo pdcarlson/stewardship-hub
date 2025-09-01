@@ -20,11 +20,11 @@ const BudgetDisplay = ({ metrics }) => {
   return (
     <Card title="Semester Budget Overview">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <Metric label="total budget" value={metrics.totalBudget} />
-        <Metric label="spent" value={metrics.totalSpent} colorClass="text-yellow-600" />
-        <Metric label="remaining" value={metrics.remaining} colorClass="text-green-600" />
+        <Metric label="Total Budget" value={metrics.totalBudget} />
+        <Metric label="Spent" value={metrics.totalSpent} colorClass="text-yellow-600" />
+        <Metric label="Remaining" value={metrics.remaining} colorClass="text-green-600" />
         <Metric 
-          label="projected spending" 
+          label="Projected Spending" 
           value={metrics.projectedSpending} 
           colorClass={isOverProjected ? 'text-red-600' : 'text-blue-600'}
         />

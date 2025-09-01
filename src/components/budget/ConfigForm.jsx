@@ -61,7 +61,7 @@ const ConfigForm = ({ config, onSuccess }) => {
       onSuccess();
 
     } catch (err) {
-      setError('failed to update settings.');
+      setError('Failed to update settings.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -114,7 +114,7 @@ const ConfigForm = ({ config, onSuccess }) => {
       
       <div className="pt-4 flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'saving...' : 'save settings'}
+          {isSubmitting ? 'Saving...' : 'Save Settings'}
         </Button>
       </div>
     </form>
