@@ -47,6 +47,8 @@ export const getSemesterConfig = async () => {
     const response = await databases.listDocuments(DB_ID, SEMESTER_CONFIG_COLLECTION_ID);
     return response.documents[0];
 };
+// create a new config document
+export const createSemesterConfig = (data) => databases.createDocument(DB_ID, SEMESTER_CONFIG_COLLECTION_ID, ID.unique(), data);
 export const updateSemesterConfig = (documentId, data) => databases.updateDocument(DB_ID, SEMESTER_CONFIG_COLLECTION_ID, documentId, data);
 
 // --- purchases ---

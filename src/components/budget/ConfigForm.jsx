@@ -1,7 +1,7 @@
 // /src/components/budget/ConfigForm.jsx
 // a form for updating the semester's budget configuration.
 import { useState, useEffect } from 'react';
-import { updateSemesterConfig } from '../../lib/appwrite';
+import { updateSemesterConfig, createSemesterConfig } from '../../lib/appwrite';
 import Button from '../ui/Button';
 
 const ConfigForm = ({ config, onSuccess }) => {
@@ -51,8 +51,15 @@ const ConfigForm = ({ config, onSuccess }) => {
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
       };
-      await updateSemesterConfig(config.$id, dataToSubmit);
+
+      // if config exists, update it. otherwise, create it.
+      if (config && config.$id) {
+        await updateSemesterConfig(config.$id, dataToSubmit);
+      } else {
+        await createSemesterConfig(dataToSubmit);
+      }
       onSuccess();
+
     } catch (err) {
       setError('failed to update settings.');
       console.error(err);
