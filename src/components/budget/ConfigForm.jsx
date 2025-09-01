@@ -61,45 +61,47 @@ const ConfigForm = ({ config, onSuccess }) => {
     }
   };
 
+  const inputStyles = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="text-red-500 text-sm">{error}</p>}
       
       <div>
         <label className="block text-sm font-medium text-gray-700">Semester Name</label>
-        <input type="text" name="semesterName" value={formData.semesterName} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+        <input type="text" name="semesterName" value={formData.semesterName} onChange={handleChange} required className={inputStyles}/>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Start Date</label>
-          <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} required className={inputStyles}/>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">End Date</label>
-          <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} required className={inputStyles}/>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Brothers on Meal Plan</label>
-          <input type="number" name="brothersOnMealPlan" value={formData.brothersOnMealPlan} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="number" name="brothersOnMealPlan" value={formData.brothersOnMealPlan} onChange={handleChange} required className={inputStyles}/>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Meal Plan Cost ($)</label>
-          <input type="number" step="0.01" name="mealPlanCost" value={formData.mealPlanCost} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="number" step="0.01" name="mealPlanCost" value={formData.mealPlanCost} onChange={handleChange} required className={inputStyles}/>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Carryover Balance ($)</label>
-          <input type="number" step="0.01" name="carryoverBalance" value={formData.carryoverBalance} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="number" step="0.01" name="carryoverBalance" value={formData.carryoverBalance} onChange={handleChange} required className={inputStyles}/>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Additional Revenue ($)</label>
-          <input type="number" step="0.01" name="additionalRevenue" value={formData.additionalRevenue} onChange={handleChange} required className="mt-1 w-full border-gray-300 rounded-md shadow-sm"/>
+          <input type="number" step="0.01" name="additionalRevenue" value={formData.additionalRevenue} onChange={handleChange} required className={inputStyles}/>
         </div>
       </div>
       
