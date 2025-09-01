@@ -12,19 +12,19 @@ const Metric = ({ label, value, colorClass = 'text-gray-900' }) => (
   </div>
 );
 
-const BudgetDisplay = ({ metrics, totalBudget }) => {
+const BudgetDisplay = ({ metrics }) => {
   if (!metrics) return null;
 
-  const isOverProjected = metrics.projectedSpending > totalBudget;
+  const isOverProjected = metrics.projectedSpending > metrics.totalBudget;
 
   return (
     <Card title="Semester Budget Overview">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <Metric label="Total Budget" value={totalBudget} />
-        <Metric label="Spent" value={metrics.totalSpent} colorClass="text-yellow-600" />
-        <Metric label="Remaining" value={metrics.remaining} colorClass="text-green-600" />
+        <Metric label="total budget" value={metrics.totalBudget} />
+        <Metric label="spent" value={metrics.totalSpent} colorClass="text-yellow-600" />
+        <Metric label="remaining" value={metrics.remaining} colorClass="text-green-600" />
         <Metric 
-          label="Projected Spending" 
+          label="projected spending" 
           value={metrics.projectedSpending} 
           colorClass={isOverProjected ? 'text-red-600' : 'text-blue-600'}
         />

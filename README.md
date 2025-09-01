@@ -61,10 +61,14 @@ The database consists of five collections to organize the application's data.
 
 | Key | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `totalBudget` | Float | Yes | e.g., `10000.00` |
+| `semesterName`| String | Yes | e.g., "Fall 2025" |
 | `startDate` | Datetime | Yes | The start date of the semester budget period |
 | `endDate` | Datetime | Yes | The end date of the semester budget period |
-| `semesterName`| String | Yes | e.g., "Fall 2025" |
+| `brothersOnMealPlan` | Integer | Yes | Number of members on the meal plan |
+| `mealPlanCost` | Float | Yes | Cost per brother for the semester |
+| `carryoverBalance` | Float | Yes | Initial balance from the previous semester |
+| `additionalRevenue` | Float | Yes | Money from fines, alumni donations, etc. |
+
 
 #### 2. `purchases`
 -   **Description**: Logs all itemized purchases made by the steward.

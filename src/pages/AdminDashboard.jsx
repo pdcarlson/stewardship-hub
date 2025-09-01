@@ -8,6 +8,7 @@ import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
+import ConfigForm from '../components/budget/ConfigForm';
 import Button from '../components/ui/Button';
 
 const AdminDashboard = () => {
@@ -18,8 +19,9 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // state to manage the visibility of the new purchase modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // state for the two modals
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   // wrap data fetching in usecallback to prevent it from being recreated on every render
   const fetchData = useCallback(async () => {
@@ -33,13 +35,12 @@ const AdminDashboard = () => {
       setPurchases(purchasesData.documents);
 
       if (configData && purchasesData.documents) {
-        const calculatedMetrics = calculateBudgetMetrics(
-          configData.totalBudget, configData.startDate, configData.endDate, purchasesData.documents
-        );
+        // updated to pass the whole config object
+        const calculatedMetrics = calculateBudgetMetrics(configData, purchasesData.documents);
         setMetrics(calculatedMetrics);
       }
     } catch (err) {
-      setError('Failed to fetch dashboard data. Please make sure semester config is set.');
+      setError('failed to fetch dashboard data. please make sure semester config is set.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -52,14 +53,15 @@ const AdminDashboard = () => {
     fetchData();
   }, [fetchData]);
 
-  // this function is passed to the form; it closes the modal and refreshes the data
-  const handlePurchaseSuccess = () => {
-    setIsModalOpen(false);
-    fetchData();
+  // success handler for both forms
+  const handleSuccess = () => {
+    setIsPurchaseModalOpen(false);
+    setIsConfigModalOpen(false);
+    fetchData(); // refetch all data
   };
 
   if (isLoading) {
-    return <div className="p-8">Loading dashboard...</div>;
+    return <div className="p-8">loading dashboard...</div>;
   }
   if (error) {
     return <div className="p-8 text-red-500">{error}</div>;
@@ -67,13 +69,22 @@ const AdminDashboard = () => {
 
   return (
     <>
-      {/* the modal is now part of the component tree, controlled by ismodalopen state */}
+      {/* purchase modal */}
       <Modal 
-        title="Log a New Purchase" 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
+        title="log a new purchase" 
+        isOpen={isPurchaseModalOpen} 
+        onClose={() => setIsPurchaseModalOpen(false)}
       >
-        <PurchaseForm onSuccess={handlePurchaseSuccess} />
+        <PurchaseForm onSuccess={handleSuccess} />
+      </Modal>
+      
+      {/* config modal */}
+      <Modal 
+        title="semester settings"
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+      >
+        <ConfigForm config={config} onSuccess={handleSuccess} />
       </Modal>
 
       <div className="min-h-screen bg-light">
@@ -81,20 +92,20 @@ const AdminDashboard = () => {
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
               {/* updated text colors for better readability */}
-              <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
-              <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
+              <h1 className="text-xl font-semibold text-white">admin dashboard</h1>
+              <p className="text-sm text-gray-300">welcome, {user?.name}!</p>
             </div>
             <div className="flex items-center space-x-4">
-              {/* the button now opens the modal when clicked */}
-              <Button onClick={() => setIsModalOpen(true)}>New Purchase</Button>
-              <Button onClick={logout} variant="secondary">Logout</Button>
+              <Button onClick={() => setIsConfigModalOpen(true)}>settings</Button>
+              <Button onClick={() => setIsPurchaseModalOpen(true)}>new purchase</Button>
+              <Button onClick={logout} variant="secondary">logout</Button>
             </div>
           </div>
         </header>
 
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            {config && <BudgetDisplay metrics={metrics} totalBudget={config.totalBudget} />}
+            {metrics && <BudgetDisplay metrics={metrics} />}
             <PurchaseHistory purchases={purchases} />
           </div>
         </main>

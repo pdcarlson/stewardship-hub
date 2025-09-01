@@ -1,14 +1,27 @@
 // /src/lib/calculations.js
 
 /**
- * calculates key budget metrics based on total budget, time frame, and spending history.
- * @param {number} totalBudget - the total budget for the semester.
- * @param {string} startDateStr - the iso 8601 date string for the semester start date.
- * @param {string} endDateStr - the iso 8601 date string for the semester end date.
- * @param {Array<Object>} purchases - an array of purchase objects, each must have a 'cost' property.
- * @returns {{totalSpent: number, remaining: number, projectedSpending: number}} an object with budget metrics.
+ * calculates the total budget from its constituent parts.
+ * @param {object} config - the semester configuration object.
+ * @returns {number} the calculated total budget.
  */
-export function calculateBudgetMetrics(totalBudget, startDateStr, endDateStr, purchases) {
+export function calculateTotalBudget(config) {
+  if (!config) return 0;
+  const mealPlanRevenue = (config.brothersOnMealPlan || 0) * (config.mealPlanCost || 0);
+  return mealPlanRevenue + (config.carryoverBalance || 0) + (config.additionalRevenue || 0);
+}
+
+
+/**
+ * calculates key budget metrics based on total budget, time frame, and spending history.
+ * @param {object} config - the semester configuration object.
+ * @param {Array<Object>} purchases - an array of purchase objects, each must have a 'cost' property.
+ * @returns {{totalBudget: number, totalSpent: number, remaining: number, projectedSpending: number}} an object with budget metrics.
+ */
+export function calculateBudgetMetrics(config, purchases) {
+  const totalBudget = calculateTotalBudget(config);
+  const { startDate: startDateStr, endDate: endDateStr } = config;
+
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
   const today = new Date();
@@ -16,13 +29,13 @@ export function calculateBudgetMetrics(totalBudget, startDateStr, endDateStr, pu
   // prevent errors from invalid date strings
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     console.error("invalid start or end date provided.");
-    return { totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
+    return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
   }
 
   // calculate total duration of the budget period in days
   const totalSemesterDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
   if (totalSemesterDays <= 0) {
-    return { totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
+    return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
   }
   
   // calculate how many days have passed since the start date
@@ -42,6 +55,7 @@ export function calculateBudgetMetrics(totalBudget, startDateStr, endDateStr, pu
   const projectedSpending = averageDailySpending * totalSemesterDays;
 
   return {
+    totalBudget: parseFloat(totalBudget.toFixed(2)),
     totalSpent: parseFloat(totalSpent.toFixed(2)),
     remaining: parseFloat((totalBudget - totalSpent).toFixed(2)),
     projectedSpending: parseFloat(projectedSpending.toFixed(2)),
