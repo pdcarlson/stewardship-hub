@@ -25,7 +25,8 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
         cost: parseFloat(cost),
         quantity: parseInt(quantity, 10),
         category,
-        purchaseDate: new Date(purchaseDate).toISOString(),
+        // fix: set time to noon to avoid timezone issues
+        purchaseDate: new Date(`${purchaseDate}T12:00:00`).toISOString(),
         purchaseFrequency,
       };
       await createPurchase(purchaseData);

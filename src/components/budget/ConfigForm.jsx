@@ -48,8 +48,9 @@ const ConfigForm = ({ config, onSuccess }) => {
       // we need to convert date strings back to iso strings for appwrite
       const dataToSubmit = {
         ...formData,
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString(),
+        // fix: set time to noon to avoid timezone issues
+        startDate: new Date(`${formData.startDate}T12:00:00`).toISOString(),
+        endDate: new Date(`${formData.endDate}T12:00:00`).toISOString(),
       };
 
       // if config exists, update it. otherwise, create it.
