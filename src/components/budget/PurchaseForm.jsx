@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { createPurchase } from '../../lib/appwrite';
 import Button from '../ui/Button';
 
-const PurchaseForm = ({ onSuccess }) => {
+const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
   const [itemName, setItemName] = useState('');
   const [cost, setCost] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState('Meal Plan');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]); // defaults to today
-  const [purchaseFrequency, setPurchaseFrequency] = useState('weekly'); // new state
+  const [purchaseFrequency, setPurchaseFrequency] = useState('weekly'); // default is now weekly
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,10 +26,10 @@ const PurchaseForm = ({ onSuccess }) => {
         quantity: parseInt(quantity, 10),
         category,
         purchaseDate: new Date(purchaseDate).toISOString(),
-        purchaseFrequency, // add to data
+        purchaseFrequency,
       };
       await createPurchase(purchaseData);
-      onSuccess(); // call the success callback from the parent
+      onSuccess();
     } catch (err) {
       setError('Failed to create purchase.');
       console.error(err);
@@ -46,7 +46,19 @@ const PurchaseForm = ({ onSuccess }) => {
       
       <div>
         <label className="block text-sm font-medium text-gray-700">Item Name</label>
-        <input type="text" value={itemName} onChange={(e) => setItemName(e.target.value)} required className={inputStyles}/>
+        <input 
+          type="text" 
+          value={itemName} 
+          onChange={(e) => setItemName(e.target.value)} 
+          required 
+          className={inputStyles}
+          list="item-names" // connect input to datalist
+        />
+        <datalist id="item-names">
+          {itemNames.map(name => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -68,10 +80,10 @@ const PurchaseForm = ({ onSuccess }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Purchase Frequency</label>
           <select value={purchaseFrequency} onChange={(e) => setPurchaseFrequency(e.target.value)} className={inputStyles}>
+            <option value="once">Once</option>
             <option value="weekly">Weekly</option>
             <option value="bi-weekly">Bi-Weekly</option>
             <option value="monthly">Monthly</option>
-            <option value="once">Once</option>
           </select>
         </div>
       </div>

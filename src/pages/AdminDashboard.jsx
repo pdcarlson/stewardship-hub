@@ -1,11 +1,12 @@
 // /src/pages/AdminDashboard.jsx
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getSemesterConfig, getPurchases } from '../lib/appwrite';
-import { calculateBudgetMetrics } from '../lib/calculations';
+import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
+import UsageReport from '../components/budget/UsageReport'; 
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -16,14 +17,13 @@ const AdminDashboard = () => {
   const [config, setConfig] = useState(null);
   const [purchases, setPurchases] = useState([]);
   const [metrics, setMetrics] = useState(null);
+  const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // state for the two modals
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
-  // wrap data fetching in usecallback to prevent it from being recreated on every render
   const fetchData = useCallback(async () => {
     try {
       const [configData, purchasesData] = await Promise.all([
@@ -31,12 +31,14 @@ const AdminDashboard = () => {
         getPurchases(),
       ]);
       
+      const purchaseDocs = purchasesData.documents;
       setConfig(configData);
-      setPurchases(purchasesData.documents);
+      setPurchases(purchaseDocs);
 
-      if (configData && purchasesData.documents) {
-        // updated to pass the whole config object
-        const calculatedMetrics = calculateBudgetMetrics(configData, purchasesData.documents);
+      if (configData && purchaseDocs) {
+        const weeklyUsage = calculateAverageWeeklyUsage(purchaseDocs, configData);
+        setUsageStats(weeklyUsage);
+        const calculatedMetrics = calculateBudgetMetrics(configData, purchaseDocs, weeklyUsage);
         setMetrics(calculatedMetrics);
       }
     } catch (err) {
@@ -47,18 +49,21 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // fetch data when the component first loads
   useEffect(() => {
     setIsLoading(true);
     fetchData();
   }, [fetchData]);
 
-  // success handler for both forms
   const handleSuccess = () => {
     setIsPurchaseModalOpen(false);
     setIsConfigModalOpen(false);
-    fetchData(); // refetch all data
+    fetchData();
   };
+  
+  // derive a unique list of item names for the autofill
+  const uniqueItemNames = useMemo(() => {
+    return [...new Set(purchases.map(p => p.itemName).sort())];
+  }, [purchases]);
 
   if (isLoading) {
     return <div className="p-8">Loading Dashboard...</div>;
@@ -69,16 +74,14 @@ const AdminDashboard = () => {
 
   return (
     <>
-      {/* purchase modal */}
       <Modal 
         title="Log a New Purchase" 
         isOpen={isPurchaseModalOpen} 
         onClose={() => setIsPurchaseModalOpen(false)}
       >
-        <PurchaseForm onSuccess={handleSuccess} />
+        <PurchaseForm onSuccess={handleSuccess} itemNames={uniqueItemNames} />
       </Modal>
       
-      {/* config modal */}
       <Modal 
         title="Semester Settings"
         isOpen={isConfigModalOpen}
@@ -91,7 +94,6 @@ const AdminDashboard = () => {
         <header className="bg-[#1f2937] shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
-              {/* updated text colors for better readability */}
               <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
@@ -106,6 +108,7 @@ const AdminDashboard = () => {
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             {metrics && <BudgetDisplay metrics={metrics} />}
+            <UsageReport usageStats={usageStats} /> 
             <PurchaseHistory purchases={purchases} />
           </div>
         </main>

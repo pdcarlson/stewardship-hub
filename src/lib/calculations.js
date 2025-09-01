@@ -11,64 +11,91 @@ export function calculateTotalBudget(config) {
   return mealPlanRevenue + (config.carryoverBalance || 0) + (config.additionalRevenue || 0);
 }
 
+/**
+ * new function: calculates average weekly usage and cost for recurring items.
+ * @param {Array<Object>} purchases - all purchase documents.
+ * @param {object} config - the semester configuration object.
+ * @returns {Object} an object mapping item names to their usage stats.
+ */
+export function calculateAverageWeeklyUsage(purchases, config) {
+  const recurringPurchases = purchases.filter(p => p.purchaseFrequency && p.purchaseFrequency !== 'once');
+  if (recurringPurchases.length === 0 || !config) {
+    return {};
+  }
+
+  const startDate = new Date(config.startDate);
+  const endDate = new Date(config.endDate);
+  const today = new Date();
+  
+  // use today's date or the end date, whichever is earlier, for the calculation period
+  const effectiveEndDate = today > endDate ? endDate : today;
+
+  // calculate weeks passed since the start of the semester
+  let weeksPassed = (effectiveEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7);
+  // ensure we don't divide by zero if it's the first week
+  if (weeksPassed <= 0) {
+    weeksPassed = 1; 
+  }
+
+  // group purchases by item name
+  const itemsByName = recurringPurchases.reduce((acc, p) => {
+    const itemName = p.itemName.toLowerCase();
+    if (!acc[itemName]) {
+      acc[itemName] = [];
+    }
+    acc[itemName].push(p);
+    return acc;
+  }, {});
+
+  // calculate averages for each item
+  const usageStats = {};
+  for (const itemName in itemsByName) {
+    const itemPurchases = itemsByName[itemName];
+    const totalQuantity = itemPurchases.reduce((sum, p) => sum + p.quantity, 0);
+    const totalCost = itemPurchases.reduce((sum, p) => sum + p.cost, 0);
+    
+    usageStats[itemName] = {
+      itemName: itemPurchases[0].itemName, // use original casing for display
+      avgWeeklyCount: parseFloat((totalQuantity / weeksPassed).toFixed(2)),
+      avgCost: parseFloat((totalCost / totalQuantity).toFixed(2)),
+    };
+  }
+
+  return usageStats;
+}
+
 
 /**
- * calculates key budget metrics based on total budget, time frame, and spending history.
+ * calculates key budget metrics using the new average usage projection.
  * @param {object} config - the semester configuration object.
  * @param {Array<Object>} purchases - an array of purchase objects.
+ * @param {Object} usageStats - the pre-calculated weekly usage statistics.
  * @returns {{totalBudget: number, totalSpent: number, remaining: number, projectedSpending: number}} an object with budget metrics.
  */
-export function calculateBudgetMetrics(config, purchases) {
+export function calculateBudgetMetrics(config, purchases, usageStats) {
   const totalBudget = calculateTotalBudget(config);
-  const { startDate: startDateStr, endDate: endDateStr } = config;
-
-  const startDate = new Date(startDateStr);
-  const endDate = new Date(endDateStr);
-
-  // prevent errors from invalid date strings
-  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    console.error("invalid start or end date provided.");
-    return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
-  }
-
-  // calculate total duration of the budget period in days/weeks
-  const totalSemesterDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-  const totalSemesterWeeks = totalSemesterDays / 7;
-
-  if (totalSemesterDays <= 0) {
-    return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
-  }
-  
-  // calculate total spent by summing up all purchase costs
   const totalSpent = purchases.reduce((acc, p) => acc + p.cost, 0);
+
+  // --- new projection logic using weekly averages ---
+  const today = new Date();
+  const endDate = new Date(config.endDate);
+  const remainingDays = Math.max(0, (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const remainingWeeks = remainingDays / 7;
+
+  let projectedFutureSpending = 0;
+  for (const itemName in usageStats) {
+    const stats = usageStats[itemName];
+    projectedFutureSpending += stats.avgWeeklyCount * stats.avgCost * remainingWeeks;
+  }
   
-  // --- new projection logic ---
-  let projectedSpending = 0;
-  const oneTimePurchases = purchases.filter(p => p.purchaseFrequency === 'once');
-  const recurringPurchases = purchases.filter(p => p.purchaseFrequency !== 'once');
+  // one-time purchases are already in totalspent and don't have future spending
+  const oneTimeCosts = purchases
+    .filter(p => p.purchaseFrequency === 'once')
+    .reduce((sum, p) => sum + p.cost, 0);
 
-  // 1. add all one-time costs to the projection
-  projectedSpending += oneTimePurchases.reduce((acc, p) => acc + p.cost, 0);
-
-  // 2. calculate and add projected costs for recurring items
-  recurringPurchases.forEach(p => {
-    let multiplier = 0;
-    switch (p.purchaseFrequency) {
-      case 'weekly':
-        multiplier = totalSemesterWeeks;
-        break;
-      case 'bi-weekly':
-        multiplier = totalSemesterWeeks / 2;
-        break;
-      case 'monthly':
-        multiplier = totalSemesterWeeks / 4.33; // average weeks in a month
-        break;
-      default:
-        multiplier = 0;
-    }
-    projectedSpending += p.cost * multiplier;
-  });
-
+  // total projection is what's already spent on recurring items + future recurring + one-time costs
+  const recurringSpent = totalSpent - oneTimeCosts;
+  const projectedSpending = recurringSpent + projectedFutureSpending + oneTimeCosts;
 
   return {
     totalBudget: parseFloat(totalBudget.toFixed(2)),
@@ -76,31 +103,4 @@ export function calculateBudgetMetrics(config, purchases) {
     remaining: parseFloat((totalBudget - totalSpent).toFixed(2)),
     projectedSpending: parseFloat(projectedSpending.toFixed(2)),
   };
-}
-
-
-/**
- * calculates the average weekly consumption of an item based on its consumption logs.
- * @param {Array<{quantityUsed: number, logDate: string}>} logs - array of consumption log objects.
- * @returns {number} the average number of units consumed per week.
- */
-export function calculateWeeklyConsumption(logs) {
-    if (!logs || logs.length < 2) return 0;
-
-    // ensure logs are sorted by date to find the correct time span
-    logs.sort((a, b) => new Date(a.logDate).getTime() - new Date(b.logDate).getTime());
-    
-    const firstDate = new Date(logs[0].logDate);
-    const lastDate = new Date(logs[logs.length - 1].logDate);
-
-    // calculate the total time span of logging in days
-    const totalDays = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
-    
-    // avoid division by zero; if less than a day, treat as one day for calculation
-    const totalWeeks = (totalDays > 1 ? totalDays : 1) / 7;
-    
-    const totalUsed = logs.reduce((sum, log) => sum + log.quantityUsed, 0);
-
-    const average = totalUsed / totalWeeks;
-    return parseFloat(average.toFixed(2));
 }
