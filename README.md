@@ -81,6 +81,8 @@ The database consists of five collections to organize the application's data.
 | `quantity` | Integer | Yes | `1` | |
 | `purchaseDate`| Datetime | Yes | | |
 | `category` | String | Yes | `Meal Plan` | Used to categorize expenses |
+| `purchaseFrequency` | String | Yes | `once` | e.g., `once`, `weekly`, `bi-weekly`, `monthly` |
+
 
 #### 3. `suggestions`
 -   **Description**: Stores shopping list items submitted by members.

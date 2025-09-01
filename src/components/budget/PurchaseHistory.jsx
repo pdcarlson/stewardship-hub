@@ -11,6 +11,7 @@ const PurchaseHistory = ({ purchases }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequency</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
             </tr>
@@ -20,6 +21,7 @@ const PurchaseHistory = ({ purchases }) => {
               <tr key={purchase.$id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{purchase.itemName}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{purchase.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{purchase.purchaseFrequency}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(purchase.purchaseDate).toLocaleDateString()}
                 </td>

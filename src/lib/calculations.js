@@ -15,7 +15,7 @@ export function calculateTotalBudget(config) {
 /**
  * calculates key budget metrics based on total budget, time frame, and spending history.
  * @param {object} config - the semester configuration object.
- * @param {Array<Object>} purchases - an array of purchase objects, each must have a 'cost' property.
+ * @param {Array<Object>} purchases - an array of purchase objects.
  * @returns {{totalBudget: number, totalSpent: number, remaining: number, projectedSpending: number}} an object with budget metrics.
  */
 export function calculateBudgetMetrics(config, purchases) {
@@ -24,7 +24,6 @@ export function calculateBudgetMetrics(config, purchases) {
 
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
-  const today = new Date();
 
   // prevent errors from invalid date strings
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -32,27 +31,44 @@ export function calculateBudgetMetrics(config, purchases) {
     return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
   }
 
-  // calculate total duration of the budget period in days
+  // calculate total duration of the budget period in days/weeks
   const totalSemesterDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+  const totalSemesterWeeks = totalSemesterDays / 7;
+
   if (totalSemesterDays <= 0) {
     return { totalBudget, totalSpent: 0, remaining: totalBudget, projectedSpending: 0 };
   }
   
-  // calculate how many days have passed since the start date
-  let daysIntoSemester = (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-  
-  // clamp the value to be within the semester bounds
-  if (daysIntoSemester < 0) daysIntoSemester = 0;
-  if (daysIntoSemester > totalSemesterDays) daysIntoSemester = totalSemesterDays;
-
   // calculate total spent by summing up all purchase costs
   const totalSpent = purchases.reduce((acc, p) => acc + p.cost, 0);
   
-  // determine average daily spending based on days passed
-  const averageDailySpending = daysIntoSemester > 0 ? totalSpent / daysIntoSemester : 0;
-  
-  // project total spending over the entire semester
-  const projectedSpending = averageDailySpending * totalSemesterDays;
+  // --- new projection logic ---
+  let projectedSpending = 0;
+  const oneTimePurchases = purchases.filter(p => p.purchaseFrequency === 'once');
+  const recurringPurchases = purchases.filter(p => p.purchaseFrequency !== 'once');
+
+  // 1. add all one-time costs to the projection
+  projectedSpending += oneTimePurchases.reduce((acc, p) => acc + p.cost, 0);
+
+  // 2. calculate and add projected costs for recurring items
+  recurringPurchases.forEach(p => {
+    let multiplier = 0;
+    switch (p.purchaseFrequency) {
+      case 'weekly':
+        multiplier = totalSemesterWeeks;
+        break;
+      case 'bi-weekly':
+        multiplier = totalSemesterWeeks / 2;
+        break;
+      case 'monthly':
+        multiplier = totalSemesterWeeks / 4.33; // average weeks in a month
+        break;
+      default:
+        multiplier = 0;
+    }
+    projectedSpending += p.cost * multiplier;
+  });
+
 
   return {
     totalBudget: parseFloat(totalBudget.toFixed(2)),

@@ -10,6 +10,7 @@ const PurchaseForm = ({ onSuccess }) => {
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState('Meal Plan');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]); // defaults to today
+  const [purchaseFrequency, setPurchaseFrequency] = useState('weekly'); // new state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,6 +26,7 @@ const PurchaseForm = ({ onSuccess }) => {
         quantity: parseInt(quantity, 10),
         category,
         purchaseDate: new Date(purchaseDate).toISOString(),
+        purchaseFrequency, // add to data
       };
       await createPurchase(purchaseData);
       onSuccess(); // call the success callback from the parent
@@ -58,9 +60,20 @@ const PurchaseForm = ({ onSuccess }) => {
         </div>
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Category</label>
-        <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required className={inputStyles}/>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required className={inputStyles}/>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Purchase Frequency</label>
+          <select value={purchaseFrequency} onChange={(e) => setPurchaseFrequency(e.target.value)} className={inputStyles}>
+            <option value="weekly">Weekly</option>
+            <option value="bi-weekly">Bi-Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="once">Once</option>
+          </select>
+        </div>
       </div>
       
       <div>
