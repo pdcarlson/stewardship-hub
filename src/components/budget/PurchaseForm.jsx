@@ -1,18 +1,30 @@
 // /src/components/budget/PurchaseForm.jsx
 // the form for creating a new purchase record.
-import { useState } from 'react';
-import { createPurchase } from '../../lib/appwrite';
+import { useState, useEffect } from 'react';
+import { createPurchase, updatePurchase } from '../../lib/appwrite';
 import Button from '../ui/Button';
 
-const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
+const PurchaseForm = ({ onSuccess, itemNames = [], purchaseToEdit }) => {
   const [itemName, setItemName] = useState('');
   const [cost, setCost] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState('Meal Plan');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isRecurring, setIsRecurring] = useState(true); // new boolean state, defaults to true
+  const [isRecurring, setIsRecurring] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // if we are editing, populate the form with the existing data
+  useEffect(() => {
+    if (purchaseToEdit) {
+      setItemName(purchaseToEdit.itemName);
+      setCost(purchaseToEdit.cost);
+      setQuantity(purchaseToEdit.quantity);
+      setCategory(purchaseToEdit.category);
+      setPurchaseDate(new Date(purchaseToEdit.purchaseDate).toISOString().split('T')[0]);
+      setIsRecurring(purchaseToEdit.purchaseFrequency === 'recurring');
+    }
+  }, [purchaseToEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +38,20 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
         quantity: parseInt(quantity, 10),
         category,
         purchaseDate: new Date(`${purchaseDate}T12:00:00`).toISOString(),
-        // convert boolean to 'recurring' or 'once'
         purchaseFrequency: isRecurring ? 'recurring' : 'once',
         isActiveForProjection: isRecurring,
       };
-      await createPurchase(purchaseData);
+      
+      // if we have a purchase to edit, update it. otherwise, create a new one.
+      if (purchaseToEdit) {
+        await updatePurchase(purchaseToEdit.$id, purchaseData);
+      } else {
+        await createPurchase(purchaseData);
+      }
+      
       onSuccess();
     } catch (err) {
-      setError('Failed to create purchase.');
+      setError('Failed to save purchase.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -41,6 +59,7 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
   };
   
   const inputStyles = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
+  const formTitle = purchaseToEdit ? 'Edit Purchase' : 'Log a New Purchase';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

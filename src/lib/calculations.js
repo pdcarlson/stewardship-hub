@@ -18,10 +18,10 @@ export function calculateTotalBudget(config) {
  * @returns {Object} an object mapping item names to their usage stats.
  */
 export function calculateAverageWeeklyUsage(purchases, config) {
-  // only consider active, recurring purchases for this calculation
-  const activeRecurring = purchases.filter(p => p.purchaseFrequency !== 'once' && p.isActiveForProjection);
+  // fix: process all recurring purchases, not just active ones
+  const recurringPurchases = purchases.filter(p => p.purchaseFrequency && p.purchaseFrequency !== 'once');
   
-  if (activeRecurring.length === 0 || !config) {
+  if (recurringPurchases.length === 0 || !config) {
     return {};
   }
 
@@ -36,7 +36,7 @@ export function calculateAverageWeeklyUsage(purchases, config) {
     weeksPassed = 1; 
   }
 
-  const itemsByName = activeRecurring.reduce((acc, p) => {
+  const itemsByName = recurringPurchases.reduce((acc, p) => {
     const itemName = p.itemName.toLowerCase();
     if (!acc[itemName]) {
       acc[itemName] = [];
@@ -55,7 +55,7 @@ export function calculateAverageWeeklyUsage(purchases, config) {
       itemName: itemPurchases[0].itemName,
       avgWeeklyCount: parseFloat((totalQuantity / weeksPassed).toFixed(2)),
       avgCost: parseFloat((totalCost / totalQuantity).toFixed(2)),
-      // pass along the active status for the ui
+      // determine status from the first item (all should be the same)
       isActive: itemPurchases[0].isActiveForProjection,
     };
   }
