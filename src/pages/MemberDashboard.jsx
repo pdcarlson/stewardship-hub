@@ -121,10 +121,10 @@ const MemberDashboard = () => {
         
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto space-y-10">
+            <div className="max-w-3xl mx-auto space-y-8">
               
-              {/* stocked items section */}
-              <section>
+              {/* stocked items section wrapped in a card */}
+              <Card>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Currently Stocked Items</h2>
                 <p className="text-gray-600 mb-6">Search for an item to see if we have it. If something is out of stock, let the steward know.</p>
                 <div>
@@ -136,7 +136,6 @@ const MemberDashboard = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
-                {/* container with max-height and scrolling */}
                 <div className="mt-6 max-h-96 overflow-y-auto pr-2">
                   {isLoading ? <p>Loading items...</p> : error ? <p className="text-red-500">{error}</p> : (
                     <div className="space-y-3">
@@ -144,7 +143,8 @@ const MemberDashboard = () => {
                         activeItems.map(itemName => {
                           const isReported = shoppingListNames.has(itemName);
                           return (
-                            <Card key={itemName} className="p-4">
+                            // using a lighter card for list items
+                            <div key={itemName} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex justify-between items-center">
                                 <p className="font-medium text-gray-800">{itemName}</p>
                                 <Button
@@ -156,7 +156,7 @@ const MemberDashboard = () => {
                                   {isReported ? 'Reported' : 'Report'}
                                 </Button>
                               </div>
-                            </Card>
+                            </div>
                           );
                         })
                       ) : (
@@ -165,10 +165,10 @@ const MemberDashboard = () => {
                     </div>
                   )}
                 </div>
-              </section>
+              </Card>
 
-              {/* my suggestions section */}
-              <section>
+              {/* my suggestions section wrapped in a card */}
+              <Card>
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800">My Suggestions</h2>
@@ -185,7 +185,7 @@ const MemberDashboard = () => {
                         { label: 'Delete', onClick: () => handleDeleteSuggestion(suggestion.$id) },
                       ];
                       return (
-                         <Card key={suggestion.$id} className="p-4">
+                         <div key={suggestion.$id} className="p-4 bg-gray-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <div>
                                 <p className="font-medium text-gray-800">{suggestion.itemName}</p>
@@ -193,15 +193,14 @@ const MemberDashboard = () => {
                               </div>
                               <DropdownMenu options={menuOptions} />
                             </div>
-                         </Card>
+                         </div>
                       );
                     })
                   ) : (
                      <p className="text-gray-500 text-center pt-4">You haven't made any suggestions yet.</p>
                   )}
                 </div>
-              </section>
-
+              </Card>
             </div>
           </div>
         </main>
