@@ -19,7 +19,7 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 ## Core Features
 
 ### 1. User Authentication & Roles
--   **Account Management**: Users can sign up for an account and log in.
+-   **Google OAuth**: Users sign in exclusively through their Google accounts for enhanced security and simplicity.
 -   **Role-Based Access Control**: The application supports two distinct user roles:
     -   `admin`: The steward, who has full access to budget management, purchase logging, and can view all member suggestions.
     -   `member`: A regular fraternity brother who can submit and manage their own suggestions.
@@ -27,7 +27,7 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 ### 2. Admin Dashboard
 -   **Dynamic Budget Tracking**: Provides a real-time overview of the semester's finances, including total budget, amount spent, amount remaining, and a visual progress bar.
 -   **Intelligent Spending Projection**: Projects total semester spending by analyzing the historical average weekly cost of recurring items.
--   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items to include or exclude them from budget projections.
+-   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items from this report to include or exclude them from budget projections.
 -   **Purchase Management (CRUD)**: The admin can create, read, update, and delete itemized purchases. A bulk import feature allows for pasting receipt text for quick logging.
 -   **Shopping List**: Automatically populated when members report an item out of stock or when an admin approves a member suggestion.
 
@@ -43,7 +43,7 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 The backend is powered by Appwrite, a backend-as-a-service platform that handles authentication and the database.
 
 ### Authentication
--   **Provider**: Utilizes Appwrite's built-in Email/Password authentication.
+-   **Provider**: Utilizes Appwrite's built-in Google OAuth2 provider.
 -   **Admin Role**: Admin privileges are managed by adding a user to a specific **Team** within the Appwrite console named `admin`.
 
 ### Database Schema
@@ -112,6 +112,7 @@ Follow these instructions to get the project running locally for development.
 -   Node.js (v18 or later)
 -   npm
 -   An Appwrite Cloud account or a self-hosted Appwrite instance.
+-   A Google Cloud Platform account for setting up OAuth.
 
 ### Installation & Setup
 
@@ -126,15 +127,15 @@ Follow these instructions to get the project running locally for development.
     npm install
     ```
 
-3.  **Set up Appwrite:**
+3.  **Set up Appwrite & Google OAuth:**
     -   Create a new project in your Appwrite console.
     -   Add a **Web App** platform, using `localhost` as the hostname for local development.
     -   Create a database and the collections detailed in the **Database Schema** section above.
-    -   Enable the **Email/Password** authentication provider.
-    -   Create a **Team** with the name `admin`.
+    -   Follow the instructions to set up Google OAuth credentials in the Google Cloud Console and add the Client ID and Secret to the Appwrite Google provider.
+    -   Create a **Team** in Appwrite with the name `admin`. Add your user account to this team to gain admin privileges.
 
 4.  **Set up environment variables:**
-    -   Make a copy of the `.env.example` file and rename it to `.env`.
+    -   Create a copy of `.env.example` file if it exists and rename it to `.env`.
     -   Fill in the `.env` file with your project's credentials from the Appwrite console settings.
 
 5.  **Run the development server:**
