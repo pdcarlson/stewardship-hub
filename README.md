@@ -4,7 +4,7 @@ A web application designed to help a fraternity steward manage the semester budg
 
 ## Overview
 
-This project replaces the traditional spreadsheet-based method of budget and inventory tracking with a modern, role-based web application. The "Steward" (an admin user) can manage the semester's budget, log all purchases, and view member suggestions. Regular members can log in to submit and manage their own suggestions for the house.
+This project replaces the traditional spreadsheet-based method of budget and inventory tracking with a modern, role-based web application. The "Steward" (an admin user) can manage the semester's budget, log all purchases, and view member suggestions. Regular members can log in to submit suggestions and track their status.
 
 ## Tech Stack
 
@@ -21,22 +21,20 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 ### 1. User Authentication & Roles
 -   **Account Management**: Users can sign up for an account and log in.
 -   **Role-Based Access Control**: The application supports two distinct user roles:
-    -   `admin`: The steward, who has full access to budget management, purchase logging, and can view all member suggestions.
+    -   `admin`: The steward, who has full access to budget management, purchase logging, and member suggestions.
     -   `member`: A regular fraternity brother who can submit and manage their own suggestions.
 
 ### 2. Admin Dashboard
--   **Dynamic Budget Tracking**: The admin dashboard provides a real-time overview of the semester's finances, including:
-    -   Total Semester Budget (calculated from meal plan, carryover, and additional revenue)
-    -   Total Amount Spent
-    -   Total Amount Remaining
--   **Intelligent Spending Projection**: Projects the total semester spending by analyzing the historical average weekly cost of recurring items and projecting that cost forward for the remainder of the semester.
--   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items from this report to include or exclude them from future budget projections.
--   **Purchase Logging (CRUD)**: The admin can create, read, update, and delete itemized purchases. An autofill feature suggests previously entered item names to ensure data consistency.
+-   **Dynamic Budget Tracking**: Provides a real-time overview of the semester's finances, including total budget, amount spent, amount remaining, and a visual progress bar.
+-   **Intelligent Spending Projection**: Projects total semester spending by analyzing the historical average weekly cost of recurring items.
+-   **Usage Reporting & Projection Control**: Displays a report of the average purchase frequency and cost for each recurring item. The admin can manually deactivate or reactivate items to include or exclude them from budget projections.
+-   **Purchase Management (CRUD)**: The admin can create, read, update, and delete itemized purchases. A bulk import feature allows for pasting receipt text for quick logging.
+-   **Shopping List**: Automatically populated when members report an item out of stock or when an admin approves a member suggestion.
 
-### 3. Member Suggestions
--   **Create Suggestions**: Members can create suggestions for items to be purchased.
--   **Manage Own Suggestions**: Members can only view, edit, or delete the suggestions they have personally submitted.
--   **Admin View & Response**: The admin has a dedicated view to see all member suggestions and can mark them as "Approved," "Purchased," or "Declined," with an optional response.
+### 3. Member Dashboard
+-   **View Stocked Items**: Members can view and search a list of all currently stocked recurring items.
+-   **Report Out of Stock**: Members can report an item as out of stock, which adds it to the admin's shopping list.
+-   **Submit & Manage Suggestions**: Members can submit new item suggestions and view the status (`Pending`, `Approved`, `Declined`) and any admin feedback on their past suggestions.
 
 ---
 
@@ -46,7 +44,7 @@ The backend is powered by Appwrite, a backend-as-a-service platform that handles
 
 ### Authentication
 -   **Provider**: Utilizes Appwrite's built-in Email/Password authentication.
--   **Admin Role**: Admin privileges are managed by adding a user to a specific **Team** within the Appwrite console named `admin`. The application code checks if a logged-in user is a member of this team to grant them admin access.
+-   **Admin Role**: Admin privileges are managed by adding a user to a specific **Team** within the Appwrite console named `admin`.
 
 ### Database Schema
 
@@ -95,12 +93,12 @@ The database consists of four collections to organize the application's data.
 | `adminResponse`| String | No | | An optional response from the admin |
 
 #### 4. `shoppingList`
--   **Description**: A list of items reported as out of stock by members.
+-   **Description**: A list of items reported as out of stock by members or approved from suggestions.
 -   **Permissions**: Create: `Any Authenticated User`, Read/Delete: `Team:admin`.
 
 | Key | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `itemName` | String | Yes | The name of the item that is out of stock. |
+| `itemName` | String | Yes | The name of the item. |
 | `reportedBy`| String | Yes | The Appwrite User ID of the member who reported it. |
 
 ---
