@@ -123,7 +123,7 @@ const MemberDashboard = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto space-y-8">
               
-              {/* stocked items section wrapped in a card */}
+              {/* stocked items section */}
               <Card>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Currently Stocked Items</h2>
                 <p className="text-gray-600 mb-6">Search for an item to see if we have it. If something is out of stock, let the steward know.</p>
@@ -143,7 +143,6 @@ const MemberDashboard = () => {
                         activeItems.map(itemName => {
                           const isReported = shoppingListNames.has(itemName);
                           return (
-                            // using a lighter card for list items
                             <div key={itemName} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex justify-between items-center">
                                 <p className="font-medium text-gray-800">{itemName}</p>
@@ -167,7 +166,7 @@ const MemberDashboard = () => {
                 </div>
               </Card>
 
-              {/* my suggestions section wrapped in a card */}
+              {/* my suggestions section */}
               <Card>
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -184,14 +183,28 @@ const MemberDashboard = () => {
                         { label: 'Edit', onClick: () => handleEditSuggestion(suggestion) },
                         { label: 'Delete', onClick: () => handleDeleteSuggestion(suggestion.$id) },
                       ];
+                       const statusColors = {
+                        Pending: 'bg-gray-200 text-gray-800',
+                        Approved: 'bg-blue-200 text-blue-800',
+                        Purchased: 'bg-green-200 text-green-800',
+                        Declined: 'bg-red-200 text-red-800',
+                      };
+
                       return (
                          <div key={suggestion.$id} className="p-4 bg-gray-50 rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <div>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
                                 <p className="font-medium text-gray-800">{suggestion.itemName}</p>
                                 {suggestion.reason && <p className="text-sm text-gray-500 mt-1">{suggestion.reason}</p>}
+                                {suggestion.adminResponse && <p className="text-sm italic text-indigo-600 mt-2">Steward's Response: {suggestion.adminResponse}</p>}
                               </div>
-                              <DropdownMenu options={menuOptions} />
+                              <div className="flex items-center space-x-3 ml-4">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[suggestion.status]}`}>
+                                  {suggestion.status}
+                                </span>
+                                {/* only show edit/delete menu if suggestion is still pending */}
+                                {suggestion.status === 'Pending' && <DropdownMenu options={menuOptions} />}
+                              </div>
                             </div>
                          </div>
                       );
