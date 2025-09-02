@@ -26,7 +26,8 @@ const LoginPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    // use our new stable height class instead of min-h-screen
+    <div className="min-h-svh bg-gray-100 flex items-center justify-center">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
         <h2 className="text-2xl font-bold text-center mb-2">
           Stewardship Hub
