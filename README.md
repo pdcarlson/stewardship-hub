@@ -4,7 +4,7 @@ A web application designed to help a fraternity steward manage the semester budg
 
 ## Overview
 
-This project replaces the traditional spreadsheet-based method of budget and inventory tracking with a modern, role-based web application. The "Steward" (an admin user) can manage the semester's budget, log all purchases, and view member suggestions. Regular members can log in to submit suggestions and track their status.
+This project replaces the traditional spreadsheet-based method of budget and inventory tracking with a modern, role-based web application. The "Steward" (an admin user) can manage the semester's budget, log all purchases, and view member suggestions. Regular members can log in to submit and manage their own suggestions for the house.
 
 ## Tech Stack
 
@@ -21,13 +21,13 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 ### 1. User Authentication & Roles
 -   **Account Management**: Users can sign up for an account and log in.
 -   **Role-Based Access Control**: The application supports two distinct user roles:
-    -   `admin`: The steward, who has full access to budget management, purchase logging, and member suggestions.
+    -   `admin`: The steward, who has full access to budget management, purchase logging, and can view all member suggestions.
     -   `member`: A regular fraternity brother who can submit and manage their own suggestions.
 
 ### 2. Admin Dashboard
 -   **Dynamic Budget Tracking**: Provides a real-time overview of the semester's finances, including total budget, amount spent, amount remaining, and a visual progress bar.
 -   **Intelligent Spending Projection**: Projects total semester spending by analyzing the historical average weekly cost of recurring items.
--   **Usage Reporting & Projection Control**: Displays a report of the average purchase frequency and cost for each recurring item. The admin can manually deactivate or reactivate items to include or exclude them from budget projections.
+-   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items to include or exclude them from budget projections.
 -   **Purchase Management (CRUD)**: The admin can create, read, update, and delete itemized purchases. A bulk import feature allows for pasting receipt text for quick logging.
 -   **Shopping List**: Automatically populated when members report an item out of stock or when an admin approves a member suggestion.
 
@@ -77,7 +77,8 @@ The database consists of four collections to organize the application's data.
 | `purchaseDate`| Datetime | Yes | | |
 | `category` | String | Yes | `Meal Plan` | Used to categorize expenses |
 | `purchaseFrequency` | String | Yes | `once` | e.g., `once`, `recurring` |
-| `isActiveForProjection` | Boolean | Yes | `true` | Determines if the item is used in projections. |
+| `isActiveForProjection` | Boolean | Yes | `true` | Determines if the item is used in budget projections. |
+| `isStockItem` | Boolean | Yes | `true` | Controls if the item appears on the member dashboard. |
 
 
 #### 3. `suggestions`

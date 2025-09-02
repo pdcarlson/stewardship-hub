@@ -77,10 +77,13 @@ const MemberDashboard = () => {
   };
 
   const activeItems = useMemo(() => {
-    const recurringActive = purchases.filter(p => 
-      p.purchaseFrequency === 'recurring' && p.isActiveForProjection
+    // filter for items that are recurring, active, and marked as a stock item
+    const visibleItems = purchases.filter(p => 
+      p.purchaseFrequency === 'recurring' && 
+      p.isActiveForProjection &&
+      p.isStockItem
     );
-    const uniqueNames = [...new Set(recurringActive.map(p => p.itemName))];
+    const uniqueNames = [...new Set(visibleItems.map(p => p.itemName))];
     return uniqueNames
       .filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()))
       .sort();
@@ -182,7 +185,7 @@ const MemberDashboard = () => {
                       ];
                        const statusColors = {
                         Pending: 'bg-gray-200 text-gray-800',
-                        Approved: 'bg-blue-200 text-blue-800', // add approved color
+                        Approved: 'bg-blue-200 text-blue-800',
                         Declined: 'bg-red-200 text-red-800',
                       };
 

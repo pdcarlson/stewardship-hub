@@ -11,6 +11,7 @@ const PurchaseForm = ({ onSuccess, itemNames = [], purchaseToEdit }) => {
   const [category, setCategory] = useState('Meal Plan');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
   const [isRecurring, setIsRecurring] = useState(true);
+  const [isStockItem, setIsStockItem] = useState(true); // new state for member visibility
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,6 +24,8 @@ const PurchaseForm = ({ onSuccess, itemNames = [], purchaseToEdit }) => {
       setCategory(purchaseToEdit.category);
       setPurchaseDate(new Date(purchaseToEdit.purchaseDate).toISOString().split('T')[0]);
       setIsRecurring(purchaseToEdit.purchaseFrequency === 'recurring');
+      // default to true for older items that don't have this field
+      setIsStockItem(purchaseToEdit.isStockItem !== false);
     }
   }, [purchaseToEdit]);
 
@@ -40,9 +43,9 @@ const PurchaseForm = ({ onSuccess, itemNames = [], purchaseToEdit }) => {
         purchaseDate: new Date(`${purchaseDate}T12:00:00`).toISOString(),
         purchaseFrequency: isRecurring ? 'recurring' : 'once',
         isActiveForProjection: isRecurring,
+        isStockItem, // add new flag to data
       };
       
-      // if we have a purchase to edit, update it. otherwise, create a new one.
       if (purchaseToEdit) {
         await updatePurchase(purchaseToEdit.$id, purchaseData);
       } else {
@@ -93,30 +96,41 @@ const PurchaseForm = ({ onSuccess, itemNames = [], purchaseToEdit }) => {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
-          <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required className={inputStyles}/>
-        </div>
-        <div className="flex items-end pb-1">
-          <div className="flex items-center h-full">
-             <input
-              id="is-recurring"
-              type="checkbox"
-              checked={isRecurring}
-              onChange={(e) => setIsRecurring(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-            />
-            <label htmlFor="is-recurring" className="ml-2 block text-sm text-gray-900">
-              Is this a recurring purchase?
-            </label>
-          </div>
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Category</label>
+        <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required className={inputStyles}/>
       </div>
       
       <div>
         <label className="block text-sm font-medium text-gray-700">Purchase Date</label>
         <input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} required className={inputStyles}/>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center">
+           <input
+            id="is-recurring"
+            type="checkbox"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          />
+          <label htmlFor="is-recurring" className="ml-2 block text-sm text-gray-900">
+            Is this a recurring purchase?
+          </label>
+        </div>
+        <div className="flex items-center">
+           <input
+            id="is-stock-item"
+            type="checkbox"
+            checked={isStockItem}
+            onChange={(e) => setIsStockItem(e.target.checked)}
+            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          />
+          <label htmlFor="is-stock-item" className="ml-2 block text-sm text-gray-900">
+            Show as a stocked item to members?
+          </label>
+        </div>
       </div>
       
       <div className="pt-4 flex justify-end">
