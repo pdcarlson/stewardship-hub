@@ -38,10 +38,6 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 -   **Manage Own Suggestions**: Members can only view, edit, or delete the suggestions they have personally submitted.
 -   **Admin View & Response**: The admin has a dedicated view to see all member suggestions and can mark them as "Approved," "Purchased," or "Declined," with an optional response.
 
-### 4. Inventory & Consumption Tracking (Planned)
--   A system to log the consumption of key grocery items (e.g., "Gallons of Milk," "Loaves of Bread").
--   The goal is to calculate the average weekly consumption of each item to better predict future purchasing needs.
-
 ---
 
 ## Backend Setup (Appwrite)
@@ -54,7 +50,7 @@ The backend is powered by Appwrite, a backend-as-a-service platform that handles
 
 ### Database Schema
 
-The database consists of five collections to organize the application's data.
+The database consists of four collections to organize the application's data.
 
 #### 1. `semesterConfig`
 -   **Description**: Stores the primary budget settings for the current semester. It is designed to hold only a single document.
@@ -107,26 +103,6 @@ The database consists of five collections to organize the application's data.
 | `itemName` | String | Yes | The name of the item that is out of stock. |
 | `reportedBy`| String | Yes | The Appwrite User ID of the member who reported it. |
 
-
-#### 5. `inventoryItems` (Planned)
--   **Description**: A master list of distinct, trackable inventory items.
--   **Permissions**: Read: `Any Authenticated User`, Write: `Team:admin`
-
-| Key | Type | Required | Notes |
-| :--- | :--- | :--- | :--- |
-| `name` | String | Yes | e.g., "Milk" |
-| `unit` | String | Yes | e.g., "Gallon", "Loaf" |
-
-#### 6. `consumptionLog` (Planned)
--   **Description**: Records each instance of an inventory item being consumed.
--   **Permissions**: Create: `Any Authenticated User`, Read/Update/Delete: `Team:admin`
-
-| Key | Type | Required | Notes |
-| :--- | :--- | :--- | :--- |
-| `itemId` | String | Yes | A foreign key relation to the `inventoryItems` collection |
-| `quantityUsed`| Float | Yes | |
-| `logDate` | Datetime | Yes | |
-
 ---
 
 ## Getting Started
@@ -170,8 +146,4 @@ Follow these instructions to get the project running locally for development.
 
 ## Future Roadmap
 
--   [ ] Implement the full UI for the **Member Dashboard**, including creating, viewing, and deleting suggestions.
--   [ ] Build the UI for the **Inventory Tracking** feature, allowing users to log consumption of items.
--   [ ] Create an **Inventory Report** page for the admin to view weekly consumption statistics.
--   [ ] Add editing and deleting functionality for purchases on the Admin Dashboard.
--   [ ] Implement user profile management features.
+- [ ] Google OAuth Integration
