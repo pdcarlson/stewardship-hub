@@ -18,3 +18,16 @@ summary::-webkit-details-marker {
   z-index: -1;
   background-position-x: center;
 }
+
+/* add this utility class for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
