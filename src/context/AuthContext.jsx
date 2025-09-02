@@ -36,8 +36,6 @@ export const AuthProvider = ({ children }) => {
     const currentUser = await account.get();
     setUser(currentUser);
     const adminStatus = await isUserAdmin();
-    // add this console.log to see the result of the check
-    console.log('admin status check returned:', adminStatus);
     setIsAdmin(adminStatus);
     // redirect to the appropriate dashboard after login
     navigate(adminStatus ? '/admin' : '/member');
