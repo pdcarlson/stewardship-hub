@@ -12,6 +12,7 @@ import SuggestionList from '../components/suggestions/SuggestionList';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
+import BulkImportForm from '../components/budget/BulkImportForm'; // import new component
 import Button from '../components/ui/Button';
 
 const AdminDashboard = () => {
@@ -27,6 +28,7 @@ const AdminDashboard = () => {
   
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false); // state for new modal
   const [editingPurchase, setEditingPurchase] = useState(null);
 
   const fetchData = useCallback(async () => {
@@ -63,16 +65,13 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const handlePurchaseFormSuccess = () => {
+  const handleGenericSuccess = () => {
     setIsPurchaseModalOpen(false);
     setEditingPurchase(null);
+    setIsConfigModalOpen(false);
+    setIsImportModalOpen(false);
     fetchData();
   };
-
-  const handleConfigSuccess = () => {
-    setIsConfigModalOpen(false);
-    fetchData();
-  }
 
   const handleEditPurchase = (purchase) => {
     setEditingPurchase(purchase);
@@ -139,7 +138,7 @@ const AdminDashboard = () => {
         }}
       >
         <PurchaseForm 
-          onSuccess={handlePurchaseFormSuccess} 
+          onSuccess={handleGenericSuccess} 
           itemNames={uniqueItemNames}
           purchaseToEdit={editingPurchase}
         />
@@ -150,10 +149,17 @@ const AdminDashboard = () => {
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
       >
-        <ConfigForm config={config} onSuccess={handleConfigSuccess} />
+        <ConfigForm config={config} onSuccess={handleGenericSuccess} />
       </Modal>
 
-      {/* re-add the background color and ensure min-h-screen is here */}
+      <Modal
+        title="Bulk Import Purchases"
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+      >
+        <BulkImportForm onSuccess={handleGenericSuccess} />
+      </Modal>
+
       <div className="min-h-screen bg-gray-50">
         <header className="bg-[#1f2937] shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
@@ -161,7 +167,8 @@ const AdminDashboard = () => {
               <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">Bulk Import</Button>
               <Button onClick={() => setIsConfigModalOpen(true)}>Settings</Button>
               <Button onClick={() => setIsPurchaseModalOpen(true)}>New Purchase</Button>
               <Button onClick={logout} variant="secondary">Logout</Button>
