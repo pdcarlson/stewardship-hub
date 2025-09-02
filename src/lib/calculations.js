@@ -12,14 +12,16 @@ export function calculateTotalBudget(config) {
 }
 
 /**
- * new function: calculates average weekly usage and cost for recurring items.
+ * calculates average weekly usage and cost for recurring items.
  * @param {Array<Object>} purchases - all purchase documents.
  * @param {object} config - the semester configuration object.
  * @returns {Object} an object mapping item names to their usage stats.
  */
 export function calculateAverageWeeklyUsage(purchases, config) {
-  const recurringPurchases = purchases.filter(p => p.purchaseFrequency && p.purchaseFrequency !== 'once');
-  if (recurringPurchases.length === 0 || !config) {
+  // only consider active, recurring purchases for this calculation
+  const activeRecurring = purchases.filter(p => p.purchaseFrequency !== 'once' && p.isActiveForProjection);
+  
+  if (activeRecurring.length === 0 || !config) {
     return {};
   }
 
@@ -27,18 +29,14 @@ export function calculateAverageWeeklyUsage(purchases, config) {
   const endDate = new Date(config.endDate);
   const today = new Date();
   
-  // use today's date or the end date, whichever is earlier, for the calculation period
   const effectiveEndDate = today > endDate ? endDate : today;
 
-  // calculate weeks passed since the start of the semester
   let weeksPassed = (effectiveEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7);
-  // ensure we don't divide by zero if it's the first week
   if (weeksPassed <= 0) {
     weeksPassed = 1; 
   }
 
-  // group purchases by item name
-  const itemsByName = recurringPurchases.reduce((acc, p) => {
+  const itemsByName = activeRecurring.reduce((acc, p) => {
     const itemName = p.itemName.toLowerCase();
     if (!acc[itemName]) {
       acc[itemName] = [];
@@ -47,7 +45,6 @@ export function calculateAverageWeeklyUsage(purchases, config) {
     return acc;
   }, {});
 
-  // calculate averages for each item
   const usageStats = {};
   for (const itemName in itemsByName) {
     const itemPurchases = itemsByName[itemName];
@@ -55,9 +52,11 @@ export function calculateAverageWeeklyUsage(purchases, config) {
     const totalCost = itemPurchases.reduce((sum, p) => sum + p.cost, 0);
     
     usageStats[itemName] = {
-      itemName: itemPurchases[0].itemName, // use original casing for display
+      itemName: itemPurchases[0].itemName,
       avgWeeklyCount: parseFloat((totalQuantity / weeksPassed).toFixed(2)),
       avgCost: parseFloat((totalCost / totalQuantity).toFixed(2)),
+      // pass along the active status for the ui
+      isActive: itemPurchases[0].isActiveForProjection,
     };
   }
 
@@ -76,7 +75,6 @@ export function calculateBudgetMetrics(config, purchases, usageStats) {
   const totalBudget = calculateTotalBudget(config);
   const totalSpent = purchases.reduce((acc, p) => acc + p.cost, 0);
 
-  // --- new projection logic using weekly averages ---
   const today = new Date();
   const endDate = new Date(config.endDate);
   const remainingDays = Math.max(0, (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -85,15 +83,16 @@ export function calculateBudgetMetrics(config, purchases, usageStats) {
   let projectedFutureSpending = 0;
   for (const itemName in usageStats) {
     const stats = usageStats[itemName];
-    projectedFutureSpending += stats.avgWeeklyCount * stats.avgCost * remainingWeeks;
+    // only project future spending for items that are active
+    if (stats.isActive) {
+      projectedFutureSpending += stats.avgWeeklyCount * stats.avgCost * remainingWeeks;
+    }
   }
   
-  // one-time purchases are already in totalspent and don't have future spending
   const oneTimeCosts = purchases
     .filter(p => p.purchaseFrequency === 'once')
     .reduce((sum, p) => sum + p.cost, 0);
 
-  // total projection is what's already spent on recurring items + future recurring + one-time costs
   const recurringSpent = totalSpent - oneTimeCosts;
   const projectedSpending = recurringSpent + projectedFutureSpending + oneTimeCosts;
 

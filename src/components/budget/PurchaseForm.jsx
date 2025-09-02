@@ -9,8 +9,8 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
   const [cost, setCost] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState('Meal Plan');
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]); // defaults to today
-  const [purchaseFrequency, setPurchaseFrequency] = useState('weekly'); // default is now weekly
+  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isRecurring, setIsRecurring] = useState(true); // new boolean state, defaults to true
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,9 +25,10 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
         cost: parseFloat(cost),
         quantity: parseInt(quantity, 10),
         category,
-        // fix: set time to noon to avoid timezone issues
         purchaseDate: new Date(`${purchaseDate}T12:00:00`).toISOString(),
-        purchaseFrequency,
+        // convert boolean to 'recurring' or 'once'
+        purchaseFrequency: isRecurring ? 'recurring' : 'once',
+        isActiveForProjection: isRecurring,
       };
       await createPurchase(purchaseData);
       onSuccess();
@@ -53,7 +54,7 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
           onChange={(e) => setItemName(e.target.value)} 
           required 
           className={inputStyles}
-          list="item-names" // connect input to datalist
+          list="item-names"
         />
         <datalist id="item-names">
           {itemNames.map(name => (
@@ -78,14 +79,19 @@ const PurchaseForm = ({ onSuccess, itemNames = [] }) => {
           <label className="block text-sm font-medium text-gray-700">Category</label>
           <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required className={inputStyles}/>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Purchase Frequency</label>
-          <select value={purchaseFrequency} onChange={(e) => setPurchaseFrequency(e.target.value)} className={inputStyles}>
-            <option value="once">Once</option>
-            <option value="weekly">Weekly</option>
-            <option value="bi-weekly">Bi-Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
+        <div className="flex items-end pb-1">
+          <div className="flex items-center h-full">
+             <input
+              id="is-recurring"
+              type="checkbox"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <label htmlFor="is-recurring" className="ml-2 block text-sm text-gray-900">
+              Is this a recurring purchase?
+            </label>
+          </div>
         </div>
       </div>
       

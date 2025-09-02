@@ -1,12 +1,12 @@
 // /src/pages/AdminDashboard.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSemesterConfig, getPurchases } from '../lib/appwrite';
+import { getSemesterConfig, getPurchases, updatePurchase } from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
-import UsageReport from '../components/budget/UsageReport'; 
+import UsageReport from '../components/budget/UsageReport';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -25,6 +25,7 @@ const AdminDashboard = () => {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
+    setIsLoading(true);
     try {
       const [configData, purchasesData] = await Promise.all([
         getSemesterConfig(),
@@ -50,7 +51,6 @@ const AdminDashboard = () => {
   }, []);
 
   useEffect(() => {
-    setIsLoading(true);
     fetchData();
   }, [fetchData]);
 
@@ -59,8 +59,28 @@ const AdminDashboard = () => {
     setIsConfigModalOpen(false);
     fetchData();
   };
+
+  const handleToggleItemStatus = async (itemName, newStatus) => {
+    try {
+      // find all purchase documents that match this item name
+      const purchasesToUpdate = purchases.filter(p => p.itemName.toLowerCase() === itemName.toLowerCase());
+      
+      // create an array of promises to update each document
+      const updatePromises = purchasesToUpdate.map(p => 
+        updatePurchase(p.$id, { isActiveForProjection: newStatus })
+      );
+      
+      // wait for all updates to complete
+      await Promise.all(updatePromises);
+      
+      // refetch all data to update the ui
+      fetchData();
+    } catch (err) {
+      console.error('Failed to toggle item status:', err);
+      setError('Failed to update item status.');
+    }
+  };
   
-  // derive a unique list of item names for the autofill
   const uniqueItemNames = useMemo(() => {
     return [...new Set(purchases.map(p => p.itemName).sort())];
   }, [purchases]);
@@ -108,7 +128,7 @@ const AdminDashboard = () => {
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             {metrics && <BudgetDisplay metrics={metrics} />}
-            <UsageReport usageStats={usageStats} /> 
+            <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} /> 
             <PurchaseHistory purchases={purchases} />
           </div>
         </main>

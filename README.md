@@ -81,7 +81,8 @@ The database consists of five collections to organize the application's data.
 | `quantity` | Integer | Yes | `1` | |
 | `purchaseDate`| Datetime | Yes | | |
 | `category` | String | Yes | `Meal Plan` | Used to categorize expenses |
-| `purchaseFrequency` | String | Yes | `once` | e.g., `once`, `weekly`, `bi-weekly`, `monthly` |
+| `purchaseFrequency` | String | Yes | `once` | e.g., `once`, `recurring` |
+| `isActiveForProjection` | Boolean | Yes | `true` | Determines if the item is used in projections. |
 
 
 #### 3. `suggestions`
