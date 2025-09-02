@@ -1,13 +1,14 @@
 // /src/pages/AdminDashboard.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList } from '../lib/appwrite';
+import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList, getSuggestions } from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
 import UsageReport from '../components/budget/UsageReport'; 
-import ShoppingList from '../components/budget/ShoppingList'; // import new component
+import ShoppingList from '../components/budget/ShoppingList';
+import SuggestionList from '../components/suggestions/SuggestionList'; // import new component
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -17,7 +18,8 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [config, setConfig] = useState(null);
   const [purchases, setPurchases] = useState([]);
-  const [shoppingList, setShoppingList] = useState([]); // new state
+  const [shoppingList, setShoppingList] = useState([]);
+  const [suggestions, setSuggestions] = useState([]); // new state
   const [metrics, setMetrics] = useState(null);
   const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -30,16 +32,18 @@ const AdminDashboard = () => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [configData, purchasesData, shoppingListData] = await Promise.all([
+      const [configData, purchasesData, shoppingListData, suggestionsData] = await Promise.all([
         getSemesterConfig(),
         getPurchases(),
         getShoppingList(),
+        getSuggestions(), // fetch all suggestions
       ]);
       
       const purchaseDocs = purchasesData.documents;
       setConfig(configData);
       setPurchases(purchaseDocs);
-      setShoppingList(shoppingListData.documents); // set shopping list state
+      setShoppingList(shoppingListData.documents);
+      setSuggestions(suggestionsData.documents); // set suggestions state
 
       if (configData && purchaseDocs) {
         const weeklyUsage = calculateAverageWeeklyUsage(purchaseDocs, configData);
@@ -90,7 +94,7 @@ const AdminDashboard = () => {
   const handleRemoveFromShoppingList = async (itemId) => {
     try {
       await removeFromShoppingList(itemId);
-      fetchData(); // refetch to update the list
+      fetchData();
     } catch (err) {
       console.error('Failed to remove item from shopping list:', err);
       setError('Failed to update shopping list.');
@@ -168,6 +172,7 @@ const AdminDashboard = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             {metrics && <BudgetDisplay metrics={metrics} />}
             <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
+            <SuggestionList suggestions={suggestions} onUpdate={fetchData} />
             <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} /> 
             <PurchaseHistory 
               purchases={purchases}

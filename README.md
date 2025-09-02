@@ -33,10 +33,10 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 -   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items from this report to include or exclude them from future budget projections.
 -   **Purchase Logging (CRUD)**: The admin can create, read, update, and delete itemized purchases. An autofill feature suggests previously entered item names to ensure data consistency.
 
-### 3. Member Suggestions (Partially Implemented)
+### 3. Member Suggestions
 -   **Create Suggestions**: Members can create suggestions for items to be purchased.
 -   **Manage Own Suggestions**: Members can only view, edit, or delete the suggestions they have personally submitted.
--   **Admin View**: The admin has read-only access to all suggestions submitted by all members.
+-   **Admin View & Response**: The admin has a dedicated view to see all member suggestions and can mark them as "Approved," "Purchased," or "Declined," with an optional response.
 
 ### 4. Inventory & Consumption Tracking (Planned)
 -   A system to log the consumption of key grocery items (e.g., "Gallons of Milk," "Loaves of Bread").
@@ -88,15 +88,17 @@ The database consists of five collections to organize the application's data.
 
 #### 3. `suggestions`
 -   **Description**: Stores shopping list items submitted by members.
--   **Permissions**: Create: `Any Authenticated User`, Read: `Team:admin`. (Document-level permissions grant R/U/D access to the creator).
+-   **Permissions**: Create: `Any Authenticated User`, Read/Update/Delete: `Team:admin`. (Document-level permissions grant R/U/D access to the creator).
 
-| Key | Type | Required | Notes |
-| :--- | :--- | :--- | :--- |
-| `itemName` | String | Yes | |
-| `reason` | String | No | A brief justification for the suggestion |
-| `submittedBy`| String | Yes | The Appwrite User ID of the member |
+| Key | Type | Required | Default | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| `itemName` | String | Yes | | |
+| `reason` | String | No | | A brief justification for the suggestion |
+| `submittedBy`| String | Yes | | The Appwrite User ID of the member |
+| `status` | String | Yes | `Pending` | `Pending`, `Approved`, `Purchased`, `Declined` |
+| `adminResponse`| String | No | | An optional response from the admin |
 
-#### 4. `shoppingList` (New)
+#### 4. `shoppingList`
 -   **Description**: A list of items reported as out of stock by members.
 -   **Permissions**: Create: `Any Authenticated User`, Read/Delete: `Team:admin`.
 
@@ -152,7 +154,7 @@ Follow these instructions to get the project running locally for development.
 3.  **Set up Appwrite:**
     -   Create a new project in your Appwrite console.
     -   Add a **Web App** platform, using `localhost` as the hostname for local development.
-    -   Create a database and the five collections detailed in the **Database Schema** section above.
+    -   Create a database and the collections detailed in the **Database Schema** section above.
     -   Enable the **Email/Password** authentication provider.
     -   Create a **Team** with the name `admin`.
 

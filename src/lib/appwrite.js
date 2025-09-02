@@ -32,10 +32,7 @@ export const getCurrentUser = () => account.get();
  */
 export const isUserAdmin = async () => {
     try {
-        const userTeams = await teams.list(); // get all teams the user is in
-        // for debugging, you can see what this returns
-        console.log('user teams from appwrite:', userTeams); 
-        // check if any of the user's teams is named 'admin'
+        const userTeams = await teams.list();
         return userTeams.teams.some(team => team.name === 'admin');
     } catch (error) {
         console.error("failed to check admin status:", error);
@@ -61,15 +58,25 @@ export const deletePurchase = (documentId) => databases.deleteDocument(DB_ID, PU
 export const createSuggestion = async (itemName, reason) => {
     const user = await account.get();
     const userId = user.$id;
-    // fix: a user can only grant permissions to themselves. admin access will be handled by collection-level permissions.
     const permissions = [
         Permission.read(Role.user(userId)),
         Permission.update(Role.user(userId)),
         Permission.delete(Role.user(userId)),
     ];
-    return databases.createDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, ID.unique(), { itemName, reason, submittedBy: userId }, permissions);
+    // add default status when creating
+    const data = { itemName, reason, submittedBy: userId, status: 'Pending' };
+    return databases.createDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, ID.unique(), data, permissions);
 };
-export const getSuggestions = (queries = [Query.orderDesc('$createdAt')]) => databases.listDocuments(DB_ID, SUGGESTIONS_COLLECTION_ID, queries);
+
+// updated to filter by user id if provided
+export const getSuggestions = (userId) => {
+  const queries = [Query.orderDesc('$createdAt')];
+  if (userId) {
+    queries.push(Query.equal('submittedBy', userId));
+  }
+  return databases.listDocuments(DB_ID, SUGGESTIONS_COLLECTION_ID, queries);
+};
+
 export const updateSuggestion = (documentId, data) => databases.updateDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, documentId, data);
 export const deleteSuggestion = (documentId) => databases.deleteDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, documentId);
 
@@ -79,7 +86,6 @@ export const getShoppingList = () => databases.listDocuments(DB_ID, SHOPPING_LIS
 export const addToShoppingList = async (itemName) => {
   const user = await account.get();
   const reportedBy = user.$id;
-  // create the document without custom permissions; it will inherit from the collection
   return databases.createDocument(
     DB_ID,
     SHOPPING_LIST_COLLECTION_ID,

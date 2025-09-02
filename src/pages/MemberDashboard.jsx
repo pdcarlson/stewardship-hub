@@ -1,5 +1,5 @@
 // /src/pages/MemberDashboard.jsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getPurchases, getShoppingList, addToShoppingList, getSuggestions, deleteSuggestion } from '../lib/appwrite';
 import Card from '../components/ui/Card';
@@ -21,13 +21,14 @@ const MemberDashboard = () => {
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [editingSuggestion, setEditingSuggestion] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!user) return; // guard against running before user is loaded
     setIsLoading(true);
     try {
       const [purchasesData, shoppingListData, suggestionsData] = await Promise.all([
         getPurchases(),
         getShoppingList(),
-        getSuggestions(),
+        getSuggestions(user.$id), // pass user id to get only their suggestions
       ]);
       setPurchases(purchasesData.documents);
       setShoppingList(shoppingListData.documents);
@@ -38,11 +39,11 @@ const MemberDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
   
   const handleReportOutOfStock = async (itemName) => {
     try {
