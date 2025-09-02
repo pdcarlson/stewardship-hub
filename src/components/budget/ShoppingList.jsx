@@ -15,12 +15,12 @@ const ShoppingList = ({ items, onRemove }) => {
     <Card title="Shopping List">
       <ul className="space-y-3">
         {items.map(item => (
-          <li key={item.$id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+          <li key={item.$id} className="flex flex-wrap gap-4 justify-between items-center p-3 bg-gray-50 rounded-md">
             <span className="font-medium text-gray-800">{item.itemName}</span>
             <Button 
               variant="secondary" 
               onClick={() => onRemove(item.$id)}
-              className="text-xs px-3 py-1"
+              className="text-xs px-3 py-1 flex-shrink-0"
             >
               Mark as Purchased
             </Button>

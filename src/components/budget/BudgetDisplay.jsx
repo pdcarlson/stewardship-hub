@@ -17,21 +17,20 @@ const BudgetDisplay = ({ metrics }) => {
 
   const isOverProjected = metrics.projectedSpending > metrics.totalBudget;
 
-  // calculate percentages for the progress bar
   const spentPercentage = (metrics.totalSpent / metrics.totalBudget) * 100;
   const projectedPercentage = (metrics.projectedSpending / metrics.totalBudget) * 100;
 
-  // determine the color of the progress bar based on projection
-  let progressBarColor = 'bg-blue-600'; // default color
+  let progressBarColor = 'bg-blue-600';
   if (projectedPercentage > 100) {
-    progressBarColor = 'bg-red-600'; // over budget
+    progressBarColor = 'bg-red-600';
   } else if (projectedPercentage > 90) {
-    progressBarColor = 'bg-yellow-500'; // nearing budget
+    progressBarColor = 'bg-yellow-500';
   }
 
   return (
     <Card title="Semester Budget Overview">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* updated grid classes for responsiveness */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center sm:text-left">
         <Metric label="Total Budget" value={metrics.totalBudget} />
         <Metric label="Spent" value={metrics.totalSpent} colorClass="text-yellow-600" />
         <Metric label="Remaining" value={metrics.remaining} colorClass="text-green-600" />
@@ -42,16 +41,12 @@ const BudgetDisplay = ({ metrics }) => {
         />
       </div>
 
-      {/* new progress bar section */}
       <div className="mt-6">
         <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden">
-          {/* spent amount bar */}
           <div
             className={`absolute top-0 left-0 h-full rounded-full ${progressBarColor}`}
             style={{ width: `${spentPercentage}%` }}
           ></div>
-          
-          {/* projected spending marker */}
           <div
             className="absolute top-0 h-full w-1 bg-gray-800"
             style={{ left: `${projectedPercentage}%` }}

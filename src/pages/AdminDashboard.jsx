@@ -8,7 +8,7 @@ import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
 import UsageReport from '../components/budget/UsageReport'; 
 import ShoppingList from '../components/budget/ShoppingList';
-import SuggestionList from '../components/suggestions/SuggestionList'; // import new component
+import SuggestionList from '../components/suggestions/SuggestionList';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -19,7 +19,7 @@ const AdminDashboard = () => {
   const [config, setConfig] = useState(null);
   const [purchases, setPurchases] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
-  const [suggestions, setSuggestions] = useState([]); // new state
+  const [suggestions, setSuggestions] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -36,14 +36,14 @@ const AdminDashboard = () => {
         getSemesterConfig(),
         getPurchases(),
         getShoppingList(),
-        getSuggestions(), // fetch all suggestions
+        getSuggestions(),
       ]);
       
       const purchaseDocs = purchasesData.documents;
       setConfig(configData);
       setPurchases(purchaseDocs);
       setShoppingList(shoppingListData.documents);
-      setSuggestions(suggestionsData.documents); // set suggestions state
+      setSuggestions(suggestionsData.documents);
 
       if (configData && purchaseDocs) {
         const weeklyUsage = calculateAverageWeeklyUsage(purchaseDocs, configData);
@@ -153,9 +153,9 @@ const AdminDashboard = () => {
         <ConfigForm config={config} onSuccess={handleConfigSuccess} />
       </Modal>
 
-      <div className="min-h-screen bg-light">
+      <div className="min-h-screen bg-gray-50">
         <header className="bg-[#1f2937] shadow-sm">
-          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
             <div>
               <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
