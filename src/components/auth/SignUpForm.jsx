@@ -8,11 +8,13 @@ const SignUpForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // add loading state
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true); // set loading to true
     try {
       // first, create the account
       await account.create('unique()', email, password, name);
@@ -21,6 +23,8 @@ const SignUpForm = () => {
     } catch (err) {
       setError('Failed to create an account. Please try again.');
       console.error(err);
+    } finally {
+      setIsLoading(false); // set loading to false
     }
   };
 
@@ -36,6 +40,7 @@ const SignUpForm = () => {
           onChange={(e) => setName(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           required
+          disabled={isLoading} // disable input during loading
         />
       </div>
       <div>
@@ -47,6 +52,7 @@ const SignUpForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           required
+          disabled={isLoading} // disable input during loading
         />
       </div>
       <div>
@@ -58,13 +64,15 @@ const SignUpForm = () => {
           onChange={(e) => setPassword(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           required
+          disabled={isLoading} // disable input during loading
         />
       </div>
       <button 
         type="submit"
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+        disabled={isLoading} // disable button during loading
       >
-        Sign Up
+        {isLoading ? 'Signing Up...' : 'Sign Up'}
       </button>
     </form>
   );
