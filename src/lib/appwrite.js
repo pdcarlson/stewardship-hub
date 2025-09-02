@@ -18,10 +18,17 @@ const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
 
 // --- authentication ---
-export const createAccount = (email, password, name) => account.create(ID.unique(), email, password, name);
-export const login = (email, password) => account.createEmailPasswordSession(email, password);
 export const logout = () => account.deleteSession('current');
 export const getCurrentUser = () => account.get();
+
+export const loginWithGoogle = () => {
+  // redirect to the root which will handle routing to the correct dashboard
+  const successUrl = `${window.location.origin}/`;
+  const failureUrl = `${window.location.origin}/login`;
+  
+  account.createOAuth2Session('google', successUrl, failureUrl);
+};
+
 
 /**
  * checks if the current user is a member of the 'admin' team.
@@ -48,7 +55,6 @@ export const updateSemesterConfig = (documentId, data) => databases.updateDocume
 
 // --- purchases ---
 export const createPurchase = (purchaseData) => databases.createDocument(DB_ID, PURCHASES_COLLECTION_ID, ID.unique(), purchaseData);
-// fix: increase the query limit to fetch up to 100 purchases
 export const getPurchases = (queries = [Query.orderDesc('purchaseDate'), Query.limit(100)]) => databases.listDocuments(DB_ID, PURCHASES_COLLECTION_ID, queries);
 export const updatePurchase = (documentId, purchaseData) => databases.updateDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId, purchaseData);
 export const deletePurchase = (documentId) => databases.deleteDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId);
