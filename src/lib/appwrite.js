@@ -16,8 +16,6 @@ const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CON
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
-const INVENTORY_ITEMS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_INVENTORY_ITEMS_ID;
-const CONSUMPTION_LOG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CONSUMPTION_LOG_ID;
 
 // --- authentication ---
 export const createAccount = (email, password, name) => account.create(ID.unique(), email, password, name);
@@ -50,7 +48,8 @@ export const updateSemesterConfig = (documentId, data) => databases.updateDocume
 
 // --- purchases ---
 export const createPurchase = (purchaseData) => databases.createDocument(DB_ID, PURCHASES_COLLECTION_ID, ID.unique(), purchaseData);
-export const getPurchases = (queries = [Query.orderDesc('purchaseDate')]) => databases.listDocuments(DB_ID, PURCHASES_COLLECTION_ID, queries);
+// fix: increase the query limit to fetch up to 100 purchases
+export const getPurchases = (queries = [Query.orderDesc('purchaseDate'), Query.limit(100)]) => databases.listDocuments(DB_ID, PURCHASES_COLLECTION_ID, queries);
 export const updatePurchase = (documentId, purchaseData) => databases.updateDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId, purchaseData);
 export const deletePurchase = (documentId) => databases.deleteDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId);
 
@@ -63,14 +62,12 @@ export const createSuggestion = async (itemName, reason) => {
         Permission.update(Role.user(userId)),
         Permission.delete(Role.user(userId)),
     ];
-    // add default status when creating
     const data = { itemName, reason, submittedBy: userId, status: 'Pending' };
     return databases.createDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, ID.unique(), data, permissions);
 };
 
-// updated to filter by user id if provided
 export const getSuggestions = (userId) => {
-  const queries = [Query.orderDesc('$createdAt')];
+  const queries = [Query.orderDesc('$createdAt'), Query.limit(100)];
   if (userId) {
     queries.push(Query.equal('submittedBy', userId));
   }
@@ -81,7 +78,7 @@ export const updateSuggestion = (documentId, data) => databases.updateDocument(D
 export const deleteSuggestion = (documentId) => databases.deleteDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, documentId);
 
 // --- shopping list ---
-export const getShoppingList = () => databases.listDocuments(DB_ID, SHOPPING_LIST_COLLECTION_ID, [Query.orderDesc('$createdAt')]);
+export const getShoppingList = () => databases.listDocuments(DB_ID, SHOPPING_LIST_COLLECTION_ID, [Query.orderDesc('$createdAt'), Query.limit(100)]);
 
 export const addToShoppingList = async (itemName) => {
   const user = await account.get();
@@ -95,12 +92,3 @@ export const addToShoppingList = async (itemName) => {
 };
 
 export const removeFromShoppingList = (documentId) => databases.deleteDocument(DB_ID, SHOPPING_LIST_COLLECTION_ID, documentId);
-
-
-// --- inventory items ---
-export const getInventoryItems = () => databases.listDocuments(DB_ID, INVENTORY_ITEMS_COLLECTION_ID, [Query.orderAsc('name')]);
-export const createInventoryItem = (itemData) => databases.createDocument(DB_ID, INVENTORY_ITEMS_COLLECTION_ID, ID.unique(), itemData);
-
-// --- consumption log ---
-export const logConsumption = (logData) => databases.createDocument(DB_ID, CONSUMPTION_LOG_COLLECTION_ID, ID.unique(), logData);
-export const getConsumptionLogs = (queries = [Query.orderDesc('logDate')]) => databases.listDocuments(DB_ID, CONSUMPTION_LOG_COLLECTION_ID, queries);
