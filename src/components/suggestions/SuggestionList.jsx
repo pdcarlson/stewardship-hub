@@ -1,8 +1,8 @@
 // /src/components/suggestions/SuggestionList.jsx
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Card from '../ui/Card';
 import DropdownMenu from '../ui/DropdownMenu';
-import { updateSuggestion } from '../../lib/appwrite';
+import { updateSuggestion, addToShoppingList } from '../../lib/appwrite';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 
@@ -34,16 +34,37 @@ const ResponseModal = ({ suggestion, onSave, onClose }) => {
 
 const SuggestionList = ({ suggestions, onUpdate }) => {
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  
+  // filter suggestions to only show actionable items for the admin
+  const actionableSuggestions = useMemo(() => {
+    return suggestions.filter(s => s.status === 'Pending' || s.status === 'Declined');
+  }, [suggestions]);
 
-  const handleStatusChange = async (suggestion, newStatus) => {
-    await updateSuggestion(suggestion.$id, { status: newStatus });
-    onUpdate(); // refetch data
+  // approve: add to shopping list and update status
+  const handleApprove = async (suggestion) => {
+    if (window.confirm(`Are you sure you want to approve "${suggestion.itemName}" and add it to the shopping list?`)) {
+      await addToShoppingList(suggestion.itemName);
+      await updateSuggestion(suggestion.$id, { status: 'Approved' });
+      onUpdate();
+    }
   };
 
-  if (suggestions.length === 0) {
+  // decline: update status to keep it for member feedback
+  const handleDecline = async (suggestion) => {
+    await updateSuggestion(suggestion.$id, { status: 'Declined' });
+    onUpdate();
+  };
+  
+  // re-evaluate: set a declined item back to pending
+  const handleSetPending = async (suggestion) => {
+    await updateSuggestion(suggestion.$id, { status: 'Pending' });
+    onUpdate();
+  };
+
+  if (actionableSuggestions.length === 0) {
     return (
       <Card title="Member Suggestions">
-        <p className="text-gray-500">No suggestions have been submitted yet.</p>
+        <p className="text-gray-500">No pending suggestions.</p>
       </Card>
     );
   }
@@ -59,19 +80,23 @@ const SuggestionList = ({ suggestions, onUpdate }) => {
       )}
       <Card title="Member Suggestions">
         <div className="space-y-4">
-          {suggestions.map(suggestion => {
+          {actionableSuggestions.map(suggestion => {
             const statusColors = {
               Pending: 'bg-gray-200 text-gray-800',
-              Approved: 'bg-blue-200 text-blue-800',
-              Purchased: 'bg-green-200 text-green-800',
               Declined: 'bg-red-200 text-red-800',
             };
-            const menuOptions = [
-              { label: 'Approve', onClick: () => handleStatusChange(suggestion, 'Approved') },
-              { label: 'Mark as Purchased', onClick: () => handleStatusChange(suggestion, 'Purchased') },
-              { label: 'Decline', onClick: () => handleStatusChange(suggestion, 'Declined') },
-              { label: 'Add/Edit Response', onClick: () => setSelectedSuggestion(suggestion) },
-            ];
+            
+            // build menu options dynamically based on status
+            const menuOptions = [];
+            if (suggestion.status === 'Pending') {
+              menuOptions.push({ label: 'Approve & Add to List', onClick: () => handleApprove(suggestion) });
+              menuOptions.push({ label: 'Decline', onClick: () => handleDecline(suggestion) });
+            } else if (suggestion.status === 'Declined') {
+              menuOptions.push({ label: 'Approve & Add to List', onClick: () => handleApprove(suggestion) });
+              menuOptions.push({ label: 'Re-evaluate (Set to Pending)', onClick: () => handleSetPending(suggestion) });
+            }
+            menuOptions.push({ label: 'Add/Edit Response', onClick: () => setSelectedSuggestion(suggestion) });
+
 
             return (
               <div key={suggestion.$id} className="p-4 bg-gray-50 rounded-lg">

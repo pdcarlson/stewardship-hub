@@ -95,7 +95,7 @@ The database consists of five collections to organize the application's data.
 | `itemName` | String | Yes | | |
 | `reason` | String | No | | A brief justification for the suggestion |
 | `submittedBy`| String | Yes | | The Appwrite User ID of the member |
-| `status` | String | Yes | `Pending` | `Pending`, `Approved`, `Purchased`, `Declined` |
+| `status` | String | Yes | `Pending` | Can be `Pending`, `Approved`, or `Declined`. |
 | `adminResponse`| String | No | | An optional response from the admin |
 
 #### 4. `shoppingList`

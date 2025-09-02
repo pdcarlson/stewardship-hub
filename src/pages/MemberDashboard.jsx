@@ -17,18 +17,17 @@ const MemberDashboard = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // state for the suggestion modal
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [editingSuggestion, setEditingSuggestion] = useState(null);
 
   const fetchData = useCallback(async () => {
-    if (!user) return; // guard against running before user is loaded
+    if (!user) return;
     setIsLoading(true);
     try {
       const [purchasesData, shoppingListData, suggestionsData] = await Promise.all([
         getPurchases(),
         getShoppingList(),
-        getSuggestions(user.$id), // pass user id to get only their suggestions
+        getSuggestions(user.$id),
       ]);
       setPurchases(purchasesData.documents);
       setShoppingList(shoppingListData.documents);
@@ -123,7 +122,6 @@ const MemberDashboard = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto space-y-8">
               
-              {/* stocked items section */}
               <Card>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Currently Stocked Items</h2>
                 <p className="text-gray-600 mb-6">Search for an item to see if we have it. If something is out of stock, let the steward know.</p>
@@ -166,7 +164,6 @@ const MemberDashboard = () => {
                 </div>
               </Card>
 
-              {/* my suggestions section */}
               <Card>
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -185,8 +182,7 @@ const MemberDashboard = () => {
                       ];
                        const statusColors = {
                         Pending: 'bg-gray-200 text-gray-800',
-                        Approved: 'bg-blue-200 text-blue-800',
-                        Purchased: 'bg-green-200 text-green-800',
+                        Approved: 'bg-blue-200 text-blue-800', // add approved color
                         Declined: 'bg-red-200 text-red-800',
                       };
 
@@ -202,7 +198,6 @@ const MemberDashboard = () => {
                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[suggestion.status]}`}>
                                   {suggestion.status}
                                 </span>
-                                {/* only show edit/delete menu if suggestion is still pending */}
                                 {suggestion.status === 'Pending' && <DropdownMenu options={menuOptions} />}
                               </div>
                             </div>
