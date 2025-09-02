@@ -20,8 +20,8 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    // backdrop
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    // backdrop: updated classes for blur effect
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       {/* modal content */}
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
         <div className="p-6 border-b flex justify-between items-center">
