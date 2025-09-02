@@ -153,6 +153,7 @@ const AdminDashboard = () => {
         <ConfigForm config={config} onSuccess={handleConfigSuccess} />
       </Modal>
 
+      {/* re-add the background color and ensure min-h-screen is here */}
       <div className="min-h-screen bg-gray-50">
         <header className="bg-[#1f2937] shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
