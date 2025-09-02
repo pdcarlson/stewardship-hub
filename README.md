@@ -26,11 +26,12 @@ This project replaces the traditional spreadsheet-based method of budget and inv
 
 ### 2. Admin Dashboard
 -   **Dynamic Budget Tracking**: The admin dashboard provides a real-time overview of the semester's finances, including:
-    -   Total Semester Budget
+    -   Total Semester Budget (calculated from meal plan, carryover, and additional revenue)
     -   Total Amount Spent
     -   Total Amount Remaining
--   **Spending Projection**: A linear projection of the total semester spending is calculated based on the current average weekly spending, helping the steward to forecast and adjust.
--   **Purchase Logging (CRUD)**: The admin can create, read, update, and delete itemized purchases.
+-   **Intelligent Spending Projection**: Projects the total semester spending by analyzing the historical average weekly cost of recurring items and projecting that cost forward for the remainder of the semester.
+-   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items from this report to include or exclude them from future budget projections.
+-   **Purchase Logging (CRUD)**: The admin can create, read, update, and delete itemized purchases. An autofill feature suggests previously entered item names to ensure data consistency.
 
 ### 3. Member Suggestions (Partially Implemented)
 -   **Create Suggestions**: Members can create suggestions for items to be purchased.
@@ -95,7 +96,17 @@ The database consists of five collections to organize the application's data.
 | `reason` | String | No | A brief justification for the suggestion |
 | `submittedBy`| String | Yes | The Appwrite User ID of the member |
 
-#### 4. `inventoryItems` (Planned)
+#### 4. `shoppingList` (New)
+-   **Description**: A list of items reported as out of stock by members.
+-   **Permissions**: Create: `Any Authenticated User`, Read/Delete: `Team:admin`.
+
+| Key | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `itemName` | String | Yes | The name of the item that is out of stock. |
+| `reportedBy`| String | Yes | The Appwrite User ID of the member who reported it. |
+
+
+#### 5. `inventoryItems` (Planned)
 -   **Description**: A master list of distinct, trackable inventory items.
 -   **Permissions**: Read: `Any Authenticated User`, Write: `Team:admin`
 
@@ -104,7 +115,7 @@ The database consists of five collections to organize the application's data.
 | `name` | String | Yes | e.g., "Milk" |
 | `unit` | String | Yes | e.g., "Gallon", "Loaf" |
 
-#### 5. `consumptionLog` (Planned)
+#### 6. `consumptionLog` (Planned)
 -   **Description**: Records each instance of an inventory item being consumed.
 -   **Permissions**: Create: `Any Authenticated User`, Read/Update/Delete: `Team:admin`
 

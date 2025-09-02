@@ -15,6 +15,7 @@ const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CONFIG_ID;
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
+const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID; // add new id
 const INVENTORY_ITEMS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_INVENTORY_ITEMS_ID;
 const CONSUMPTION_LOG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CONSUMPTION_LOG_ID;
 
@@ -47,7 +48,6 @@ export const getSemesterConfig = async () => {
     const response = await databases.listDocuments(DB_ID, SEMESTER_CONFIG_COLLECTION_ID);
     return response.documents[0];
 };
-// create a new config document
 export const createSemesterConfig = (data) => databases.createDocument(DB_ID, SEMESTER_CONFIG_COLLECTION_ID, ID.unique(), data);
 export const updateSemesterConfig = (documentId, data) => databases.updateDocument(DB_ID, SEMESTER_CONFIG_COLLECTION_ID, documentId, data);
 
@@ -72,6 +72,24 @@ export const createSuggestion = async (itemName, reason) => {
 export const getSuggestions = (queries = [Query.orderDesc('$createdAt')]) => databases.listDocuments(DB_ID, SUGGESTIONS_COLLECTION_ID, queries);
 export const updateSuggestion = (documentId, data) => databases.updateDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, documentId, data);
 export const deleteSuggestion = (documentId) => databases.deleteDocument(DB_ID, SUGGESTIONS_COLLECTION_ID, documentId);
+
+// --- shopping list (new) ---
+export const getShoppingList = () => databases.listDocuments(DB_ID, SHOPPING_LIST_COLLECTION_ID, [Query.orderDesc('$createdAt')]);
+
+export const addToShoppingList = async (itemName) => {
+  const user = await account.get();
+  const reportedBy = user.$id;
+  // create the document without custom permissions; it will inherit from the collection
+  return databases.createDocument(
+    DB_ID,
+    SHOPPING_LIST_COLLECTION_ID,
+    ID.unique(),
+    { itemName, reportedBy }
+  );
+};
+
+export const removeFromShoppingList = (documentId) => databases.deleteDocument(DB_ID, SHOPPING_LIST_COLLECTION_ID, documentId);
+
 
 // --- inventory items ---
 export const getInventoryItems = () => databases.listDocuments(DB_ID, INVENTORY_ITEMS_COLLECTION_ID, [Query.orderAsc('name')]);

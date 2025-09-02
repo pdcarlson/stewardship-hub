@@ -1,12 +1,13 @@
 // /src/pages/AdminDashboard.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase } from '../lib/appwrite';
+import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList } from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
 import UsageReport from '../components/budget/UsageReport'; 
+import ShoppingList from '../components/budget/ShoppingList'; // import new component
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -16,6 +17,7 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [config, setConfig] = useState(null);
   const [purchases, setPurchases] = useState([]);
+  const [shoppingList, setShoppingList] = useState([]); // new state
   const [metrics, setMetrics] = useState(null);
   const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -23,19 +25,21 @@ const AdminDashboard = () => {
   
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const [editingPurchase, setEditingPurchase] = useState(null); // state to hold the purchase being edited
+  const [editingPurchase, setEditingPurchase] = useState(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [configData, purchasesData] = await Promise.all([
+      const [configData, purchasesData, shoppingListData] = await Promise.all([
         getSemesterConfig(),
         getPurchases(),
+        getShoppingList(),
       ]);
       
       const purchaseDocs = purchasesData.documents;
       setConfig(configData);
       setPurchases(purchaseDocs);
+      setShoppingList(shoppingListData.documents); // set shopping list state
 
       if (configData && purchaseDocs) {
         const weeklyUsage = calculateAverageWeeklyUsage(purchaseDocs, configData);
@@ -53,12 +57,11 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []);
 
-  // combined handler for create and update success
   const handlePurchaseFormSuccess = () => {
     setIsPurchaseModalOpen(false);
-    setEditingPurchase(null); // clear editing state
+    setEditingPurchase(null);
     fetchData();
   };
 
@@ -67,22 +70,30 @@ const AdminDashboard = () => {
     fetchData();
   }
 
-  // handler to open the modal in 'edit' mode
   const handleEditPurchase = (purchase) => {
     setEditingPurchase(purchase);
     setIsPurchaseModalOpen(true);
   };
   
-  // handler to delete a purchase
   const handleDeletePurchase = async (purchaseId) => {
     if (window.confirm('Are you sure you want to delete this purchase?')) {
       try {
         await deletePurchase(purchaseId);
-        fetchData(); // refetch data after deleting
+        fetchData();
       } catch (err) {
         setError('Failed to delete purchase.');
         console.error(err);
       }
+    }
+  };
+  
+  const handleRemoveFromShoppingList = async (itemId) => {
+    try {
+      await removeFromShoppingList(itemId);
+      fetchData(); // refetch to update the list
+    } catch (err) {
+      console.error('Failed to remove item from shopping list:', err);
+      setError('Failed to update shopping list.');
     }
   };
 
@@ -120,7 +131,7 @@ const AdminDashboard = () => {
         isOpen={isPurchaseModalOpen} 
         onClose={() => {
           setIsPurchaseModalOpen(false);
-          setEditingPurchase(null); // clear editing state on close
+          setEditingPurchase(null);
         }}
       >
         <PurchaseForm 
@@ -156,6 +167,7 @@ const AdminDashboard = () => {
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             {metrics && <BudgetDisplay metrics={metrics} />}
+            <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} /> 
             <PurchaseHistory 
               purchases={purchases}
