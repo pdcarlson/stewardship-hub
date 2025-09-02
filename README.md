@@ -143,7 +143,3 @@ Follow these instructions to get the project running locally for development.
     npm run dev
     ```
     The application should now be running on `http://localhost:5173`.
-
-## Future Roadmap
-
-- [ ] Google OAuth Integration
