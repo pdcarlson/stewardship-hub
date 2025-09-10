@@ -55,7 +55,7 @@ export const updateSemesterConfig = (documentId, data) => databases.updateDocume
 
 // --- purchases ---
 export const createPurchase = (purchaseData) => databases.createDocument(DB_ID, PURCHASES_COLLECTION_ID, ID.unique(), purchaseData);
-export const getPurchases = (queries = [Query.orderDesc('purchaseDate'), Query.limit(100)]) => databases.listDocuments(DB_ID, PURCHASES_COLLECTION_ID, queries);
+export const getPurchases = (queries = [Query.orderDesc('purchaseDate'), Query.limit(500)]) => databases.listDocuments(DB_ID, PURCHASES_COLLECTION_ID, queries);
 export const updatePurchase = (documentId, purchaseData) => databases.updateDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId, purchaseData);
 export const deletePurchase = (documentId) => databases.deleteDocument(DB_ID, PURCHASES_COLLECTION_ID, documentId);
 
