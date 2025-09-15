@@ -47,7 +47,9 @@ const MemberDashboard = () => {
   const handleReportOutOfStock = async (itemName) => {
     try {
       await addToShoppingList(itemName);
-      fetchData();
+      // only refetch the shopping list to update the 'reported' status
+      const updatedShoppingList = await getShoppingList();
+      setShoppingList(updatedShoppingList.documents);
     } catch(err) {
       console.error("Failed to report item:", err);
     }

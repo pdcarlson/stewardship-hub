@@ -93,7 +93,8 @@ const AdminDashboard = () => {
   const handleRemoveFromShoppingList = async (itemId) => {
     try {
       await removeFromShoppingList(itemId);
-      fetchData();
+      // instead of a full refetch, just update the local state for this list
+      setShoppingList(prevList => prevList.filter(item => item.$id !== itemId));
     } catch (err) {
       console.error('Failed to remove item from shopping list:', err);
       setError('Failed to update shopping list.');
