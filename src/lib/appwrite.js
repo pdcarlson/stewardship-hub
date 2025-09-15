@@ -16,6 +16,7 @@ const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CON
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
+const ADMIN_TEAM_ID = import.meta.env.VITE_APPWRITE_ADMIN_TEAM_ID;
 
 // --- authentication ---
 export const logout = () => account.deleteSession('current');
@@ -31,16 +32,20 @@ export const loginWithGoogle = () => {
 
 
 /**
- * checks if the current user is a member of the 'admin' team.
+ * checks if the current user is a member of the 'admin' team using the team ID.
  * this method directly queries team membership for accuracy.
  * @returns {promise<boolean>}
  */
 export const isUserAdmin = async () => {
+    if (!ADMIN_TEAM_ID) {
+        console.error("VITE_APPWRITE_ADMIN_TEAM_ID is not configured in environment variables.");
+        return false;
+    }
     try {
         const userTeams = await teams.list();
-        return userTeams.teams.some(team => team.name === 'admin');
+        return userTeams.teams.some(team => team.$id === ADMIN_TEAM_ID);
     } catch (error) {
-        console.error("failed to check admin status:", error);
+        console.error("Failed to check admin status:", error);
         return false;
     }
 };
