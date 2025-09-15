@@ -1,7 +1,7 @@
 // /src/pages/AdminDashboard.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList, getSuggestions } from '../lib/appwrite';
+import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList, getSuggestions, addToShoppingList } from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
@@ -9,6 +9,7 @@ import PurchaseHistory from '../components/budget/PurchaseHistory';
 import UsageReport from '../components/budget/UsageReport';
 import ShoppingList from '../components/budget/ShoppingList';
 import SuggestionList from '../components/suggestions/SuggestionList';
+import InventoryManager from '../components/budget/InventoryManager';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
@@ -98,6 +99,18 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Failed to remove item from shopping list:', err);
       setError('Failed to update shopping list.');
+    }
+  };
+
+  const handleReportOutOfStock = async (itemName) => {
+    try {
+      await addToShoppingList(itemName);
+      // refetch just the shopping list to update the ui without a full reload
+      const updatedShoppingList = await getShoppingList();
+      setShoppingList(updatedShoppingList.documents);
+    } catch (err) {
+      console.error("failed to report item:", err);
+      setError("failed to add item to shopping list.");
     }
   };
 
@@ -194,6 +207,11 @@ const AdminDashboard = () => {
                 onToggleVisibility={handleToggleVisibility}
               />
             )}
+            <InventoryManager 
+              purchases={purchases} 
+              shoppingList={shoppingList} 
+              onReportItem={handleReportOutOfStock} 
+            />
             <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <SuggestionList suggestions={suggestions} onUpdate={fetchData} />
             <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} />
