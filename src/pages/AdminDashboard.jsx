@@ -207,12 +207,12 @@ const AdminDashboard = () => {
                 onToggleVisibility={handleToggleVisibility}
               />
             )}
+            <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <InventoryManager 
               purchases={purchases} 
               shoppingList={shoppingList} 
               onReportItem={handleReportOutOfStock} 
             />
-            <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <SuggestionList suggestions={suggestions} onUpdate={fetchData} />
             <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} />
             <PurchaseHistory
