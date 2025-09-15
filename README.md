@@ -25,11 +25,12 @@ This project replaces the traditional spreadsheet-based method of budget and inv
     -   `member`: A regular fraternity brother who can submit and manage their own suggestions.
 
 ### 2. Admin Dashboard
--   **Dynamic Budget Tracking**: Provides a real-time overview of the semester's finances, including total budget, amount spent, amount remaining, and a visual progress bar.
+-   **Dynamic Budget Tracking**: Provides a real-time overview of the semester's finances, including total budget, amount spent, amount remaining, and a visual progress bar. Features a toggle to hide monetary values for privacy.
 -   **Intelligent Spending Projection**: Projects total semester spending by analyzing the historical average weekly cost of recurring items.
 -   **Usage Reporting & Projection Control**: Displays a report of the average weekly purchase count and cost for each recurring item. The admin can manually deactivate or reactivate items from this report to include or exclude them from budget projections.
 -   **Purchase Management (CRUD)**: The admin can create, read, update, and delete itemized purchases. A bulk import feature allows for pasting receipt text for quick logging.
 -   **Shopping List**: Automatically populated when members report an item out of stock or when an admin approves a member suggestion.
+-   **Quick Inventory Management**: Admins can view and search all stocked items and report them as out-of-stock directly from their dashboard, streamlining the inventory process.
 
 ### 3. Member Dashboard
 -   **View Stocked Items**: Members can view and search a list of all currently stocked recurring items.
@@ -45,6 +46,9 @@ The backend is powered by Appwrite, a backend-as-a-service platform that handles
 ### Authentication
 -   **Provider**: Utilizes Appwrite's built-in Google OAuth2 provider.
 -   **Admin Role**: Admin privileges are managed by adding a user to a specific **Team** within the Appwrite console named `admin`.
+
+### User Preferences
+- The application uses Appwrite's User Preferences feature to store user-specific UI settings, such as the visibility toggle for budget figures. This ensures that a user's preferences persist across different devices and sessions.
 
 ### Database Schema
 
@@ -118,7 +122,7 @@ Follow these instructions to get the project running locally for development.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [your-repository-url]
+    git clone https://github.com/pdcarlson/stewardship-hub.git
     cd stewardship-hub
     ```
 
@@ -127,16 +131,27 @@ Follow these instructions to get the project running locally for development.
     npm install
     ```
 
-3.  **Set up Appwrite & Google OAuth:**
+3.  **Set up environment variables:**
+    -   Create a file named `.env` in the root of the project.
+    -   Add the following variables, replacing the placeholder values with your Appwrite project credentials:
+    ```
+    VITE_APPWRITE_ENDPOINT="https://<region>.cloud.appwrite.io/v1"
+    VITE_APPWRITE_PROJECT_ID="YOUR_PROJECT_ID"
+    VITE_APPWRITE_DATABASE_ID="YOUR_DATABASE_ID"
+    VITE_APPWRITE_SEMESTER_CONFIG_ID="YOUR_SEMESTER_CONFIG_COLLECTION_ID"
+    VITE_APPWRITE_PURCHASES_ID="YOUR_PURCHASES_COLLECTION_ID"
+    VITE_APPWRITE_SUGGESTIONS_ID="YOUR_SUGGESTIONS_COLLECTION_ID"
+    VITE_APPWRITE_SHOPPING_LIST_ID="YOUR_SHOPPING_LIST_COLLECTION_ID"
+    VITE_APPWRITE_ADMIN_TEAM_ID="YOUR_ADMIN_TEAM_ID"
+    ```
+
+4.  **Set up Appwrite & Google OAuth:**
     -   Create a new project in your Appwrite console.
     -   Add a **Web App** platform, using `localhost` as the hostname for local development.
-    -   Create a database and the collections detailed in the **Database Schema** section above.
+    -   Create a new database.
+    -   Create the four collections (`semesterConfig`, `purchases`, `suggestions`, `shoppingList`) and add the attributes for each as detailed in the **Database Schema** section. **This is a critical step.**
     -   Follow the instructions to set up Google OAuth credentials in the Google Cloud Console and add the Client ID and Secret to the Appwrite Google provider.
     -   Create a **Team** in Appwrite with the name `admin`. Add your user account to this team to gain admin privileges.
-
-4.  **Set up environment variables:**
-    -   Create a copy of `.env.example` file if it exists and rename it to `.env`.
-    -   Fill in the `.env` file with your project's credentials from the Appwrite console settings.
 
 5.  **Run the development server:**
     ```bash
