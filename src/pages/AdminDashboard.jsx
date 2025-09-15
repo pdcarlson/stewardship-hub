@@ -30,6 +30,7 @@ const AdminDashboard = () => {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false); // state for new modal
   const [editingPurchase, setEditingPurchase] = useState(null);
+  const [isBudgetVisible, setIsBudgetVisible] = useState(true); // new state for visibility
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -178,7 +179,13 @@ const AdminDashboard = () => {
 
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            {metrics && <BudgetDisplay metrics={metrics} />}
+            {metrics && (
+              <BudgetDisplay
+                metrics={metrics}
+                isBudgetVisible={isBudgetVisible}
+                onToggleVisibility={() => setIsBudgetVisible(!isBudgetVisible)}
+              />
+            )}
             <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <SuggestionList suggestions={suggestions} onUpdate={fetchData} />
             <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} /> 
