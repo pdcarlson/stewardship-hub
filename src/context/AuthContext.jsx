@@ -1,7 +1,7 @@
 // /src/context/AuthContext.jsx
 // this file creates a global state (context) for authentication.
 import { createContext, useState, useEffect, useContext } from 'react';
-import { account, isUserAdmin } from '../lib/appwrite';
+import { account, isUserAdmin, updateUserPrefs } from '../lib/appwrite';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -9,6 +9,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [prefs, setPrefs] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -18,12 +19,14 @@ export const AuthProvider = ({ children }) => {
       try {
         const currentUser = await account.get();
         setUser(currentUser);
+        setPrefs(currentUser.prefs || {});
         const adminStatus = await isUserAdmin();
         setIsAdmin(adminStatus);
       } catch (error) {
         // if no user is found, 'user' remains null.
         setUser(null);
         setIsAdmin(false);
+        setPrefs({});
       } finally {
         setIsLoading(false);
       }
@@ -35,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     await account.createEmailPasswordSession(email, password);
     const currentUser = await account.get();
     setUser(currentUser);
+    setPrefs(currentUser.prefs || {});
     const adminStatus = await isUserAdmin();
     setIsAdmin(adminStatus);
     // redirect to the appropriate dashboard after login
@@ -45,11 +49,24 @@ export const AuthProvider = ({ children }) => {
     await account.deleteSession('current');
     setUser(null);
     setIsAdmin(false);
+    setPrefs({});
     navigate('/login');
+  };
+  
+  // new function to update preferences
+  const updatePrefs = async (newPrefs) => {
+    try {
+      // merge with existing prefs to not overwrite other settings
+      const updatedPrefs = { ...prefs, ...newPrefs };
+      await updateUserPrefs(updatedPrefs);
+      setPrefs(updatedPrefs);
+    } catch (error) {
+      console.error("failed to update preferences:", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, isAdmin, login, logout, isLoading, prefs, updatePrefs }}>
       {children}
     </AuthContext.Provider>
   );

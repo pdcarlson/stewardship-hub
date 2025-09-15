@@ -50,6 +50,9 @@ export const isUserAdmin = async () => {
     }
 };
 
+// --- user preferences ---
+export const updateUserPrefs = (prefs) => account.updatePrefs(prefs);
+
 // --- semester config ---
 export const getSemesterConfig = async () => {
     const response = await databases.listDocuments(DB_ID, SEMESTER_CONFIG_COLLECTION_ID);

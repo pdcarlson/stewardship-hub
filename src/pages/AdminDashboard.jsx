@@ -6,17 +6,17 @@ import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calc
 
 import BudgetDisplay from '../components/budget/BudgetDisplay';
 import PurchaseHistory from '../components/budget/PurchaseHistory';
-import UsageReport from '../components/budget/UsageReport'; 
+import UsageReport from '../components/budget/UsageReport';
 import ShoppingList from '../components/budget/ShoppingList';
 import SuggestionList from '../components/suggestions/SuggestionList';
 import Modal from '../components/ui/Modal';
 import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
-import BulkImportForm from '../components/budget/BulkImportForm'; // import new component
+import BulkImportForm from '../components/budget/BulkImportForm';
 import Button from '../components/ui/Button';
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, prefs, updatePrefs } = useAuth();
   const [config, setConfig] = useState(null);
   const [purchases, setPurchases] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
@@ -25,12 +25,11 @@ const AdminDashboard = () => {
   const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false); // state for new modal
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState(null);
-  const [isBudgetVisible, setIsBudgetVisible] = useState(true); // new state for visibility
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -41,7 +40,7 @@ const AdminDashboard = () => {
         getShoppingList(),
         getSuggestions(),
       ]);
-      
+
       const purchaseDocs = purchasesData.documents;
       setConfig(configData);
       setPurchases(purchaseDocs);
@@ -64,7 +63,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleGenericSuccess = () => {
     setIsPurchaseModalOpen(false);
@@ -78,7 +77,7 @@ const AdminDashboard = () => {
     setEditingPurchase(purchase);
     setIsPurchaseModalOpen(true);
   };
-  
+
   const handleDeletePurchase = async (purchaseId) => {
     if (window.confirm('Are you sure you want to delete this purchase?')) {
       try {
@@ -90,7 +89,7 @@ const AdminDashboard = () => {
       }
     }
   };
-  
+
   const handleRemoveFromShoppingList = async (itemId) => {
     try {
       await removeFromShoppingList(itemId);
@@ -104,7 +103,7 @@ const AdminDashboard = () => {
   const handleToggleItemStatus = async (itemName, newStatus) => {
     try {
       const purchasesToUpdate = purchases.filter(p => p.itemName.toLowerCase() === itemName.toLowerCase());
-      const updatePromises = purchasesToUpdate.map(p => 
+      const updatePromises = purchasesToUpdate.map(p =>
         updatePurchase(p.$id, { isActiveForProjection: newStatus })
       );
       await Promise.all(updatePromises);
@@ -115,10 +114,18 @@ const AdminDashboard = () => {
     }
   };
   
+  // derive visibility from context prefs, with a default value of true
+  const isBudgetVisible = prefs.isBudgetVisible ?? true;
+
+  const handleToggleVisibility = () => {
+    // call the updatePrefs function from context
+    updatePrefs({ isBudgetVisible: !isBudgetVisible });
+  };
+
   const uniqueItemNames = useMemo(() => {
     return [...new Set(purchases.map(p => p.itemName).sort())];
   }, [purchases]);
-  
+
   const purchaseModalTitle = editingPurchase ? 'Edit Purchase' : 'Log a New Purchase';
 
   if (isLoading) {
@@ -130,22 +137,22 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Modal 
+      <Modal
         title={purchaseModalTitle}
-        isOpen={isPurchaseModalOpen} 
+        isOpen={isPurchaseModalOpen}
         onClose={() => {
           setIsPurchaseModalOpen(false);
           setEditingPurchase(null);
         }}
       >
-        <PurchaseForm 
-          onSuccess={handleGenericSuccess} 
+        <PurchaseForm
+          onSuccess={handleGenericSuccess}
           itemNames={uniqueItemNames}
           purchaseToEdit={editingPurchase}
         />
       </Modal>
-      
-      <Modal 
+
+      <Modal
         title="Semester Settings"
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
@@ -183,13 +190,13 @@ const AdminDashboard = () => {
               <BudgetDisplay
                 metrics={metrics}
                 isBudgetVisible={isBudgetVisible}
-                onToggleVisibility={() => setIsBudgetVisible(!isBudgetVisible)}
+                onToggleVisibility={handleToggleVisibility}
               />
             )}
             <ShoppingList items={shoppingList} onRemove={handleRemoveFromShoppingList} />
             <SuggestionList suggestions={suggestions} onUpdate={fetchData} />
-            <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} /> 
-            <PurchaseHistory 
+            <UsageReport usageStats={usageStats} onToggleItemStatus={handleToggleItemStatus} />
+            <PurchaseHistory
               purchases={purchases}
               onEdit={handleEditPurchase}
               onDelete={handleDeletePurchase}
