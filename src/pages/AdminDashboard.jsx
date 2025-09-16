@@ -114,8 +114,9 @@ export const AdminDashboardUI = ({
                 </Button>
               )}
               <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">Bulk Import</Button>
-              <Button onClick={() => setIsConfigModalOpen(true)}>Settings</Button>
-              <Button onClick={() => setIsPurchaseModalOpen(true)}>New Purchase</Button>
+              {/* updated buttons */}
+              <Button onClick={() => setIsConfigModalOpen(true)} variant="secondary">Settings</Button>
+              <Button onClick={() => setIsPurchaseModalOpen(true)} variant="secondary">New Purchase</Button>
               <Button onClick={onLogout} variant="secondary">Logout</Button>
             </div>
           </div>

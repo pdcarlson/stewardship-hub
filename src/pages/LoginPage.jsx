@@ -1,5 +1,5 @@
 // /src/pages/LoginPage.jsx
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginWithGoogle } from '../lib/appwrite';
 
@@ -41,6 +41,12 @@ const LoginPage = () => {
           <GoogleIcon />
           Sign in with Google
         </button>
+
+        <div className="mt-6 text-center">
+          <Link to="/" className="text-sm text-indigo-600 hover:text-indigo-500">
+            View the Public Demo
+          </Link>
+        </div>
       </div>
     </div>
   );
