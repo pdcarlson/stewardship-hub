@@ -166,7 +166,7 @@ The project follows a structured pattern to separate concerns.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/pdcarlson/stewardship-hub.git](https://github.com/pdcarlson/stewardship-hub.git)
+    git clone https://github.com/pdcarlson/stewardship-hub.git
     cd stewardship-hub
     ```
 
