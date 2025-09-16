@@ -21,6 +21,22 @@
             "entrypoint": "src/main.js",
             "commands": "npm install",
             "path": "functions/approveVerificationRequest"
+        },
+        {
+            "$id": "68c979090024edd1f5a1",
+            "execute": [],
+            "name": "approveVerificationRequest-nyc",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/approveVerificationRequest-nyc"
         }
     ]
 }
