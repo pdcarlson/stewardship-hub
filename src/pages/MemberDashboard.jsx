@@ -1,87 +1,41 @@
 // /src/pages/MemberDashboard.jsx
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { getPurchases, getShoppingList, addToShoppingList, getSuggestions, deleteSuggestion } from '../lib/appwrite';
+import { useState, useMemo } from 'react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import SuggestionForm from '../components/suggestions/SuggestionForm';
 import DropdownMenu from '../components/ui/DropdownMenu';
 
-const MemberDashboard = () => {
-  const { user, logout } = useAuth();
-  const [purchases, setPurchases] = useState([]);
-  const [shoppingList, setShoppingList] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+export const MemberDashboardUI = ({
+  user,
+  purchases,
+  shoppingList,
+  suggestions,
+  isLoading,
+  error,
+  onLogout,
+  onReportOutOfStock,
+  onSuggestionSuccess,
+  onDeleteSuggestion,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
-
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [editingSuggestion, setEditingSuggestion] = useState(null);
-
-  const fetchData = useCallback(async () => {
-    if (!user) return;
-    setIsLoading(true);
-    try {
-      const [purchasesData, shoppingListData, suggestionsData] = await Promise.all([
-        getPurchases(),
-        getShoppingList(),
-        getSuggestions(user.$id),
-      ]);
-      setPurchases(purchasesData.documents);
-      setShoppingList(shoppingListData.documents);
-      setSuggestions(suggestionsData.documents);
-    } catch (err) {
-      setError('Failed to load dashboard data.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-  
-  const handleReportOutOfStock = async (itemName) => {
-    try {
-      await addToShoppingList(itemName);
-      // only refetch the shopping list to update the 'reported' status
-      const updatedShoppingList = await getShoppingList();
-      setShoppingList(updatedShoppingList.documents);
-    } catch(err) {
-      console.error("Failed to report item:", err);
-    }
-  };
-  
-  const handleSuggestionSuccess = () => {
-    setIsSuggestionModalOpen(false);
-    setEditingSuggestion(null);
-    fetchData();
-  };
 
   const handleEditSuggestion = (suggestion) => {
     setEditingSuggestion(suggestion);
     setIsSuggestionModalOpen(true);
   };
-  
-  const handleDeleteSuggestion = async (suggestionId) => {
-    if (window.confirm('Are you sure you want to delete this suggestion?')) {
-      try {
-        await deleteSuggestion(suggestionId);
-        fetchData();
-      } catch (err) {
-        setError('Failed to delete suggestion.');
-        console.error(err);
-      }
-    }
+
+  const handleSuggestionSuccess = () => {
+    setIsSuggestionModalOpen(false);
+    setEditingSuggestion(null);
+    onSuggestionSuccess();
   };
 
   const activeItems = useMemo(() => {
-    // filter for items that are recurring, active, and marked as a stock item
-    const visibleItems = purchases.filter(p => 
-      p.purchaseFrequency === 'recurring' && 
+    const visibleItems = purchases.filter(p =>
+      p.purchaseFrequency === 'recurring' &&
       p.isActiveForProjection &&
       p.isStockItem
     );
@@ -117,7 +71,7 @@ const MemberDashboard = () => {
               <h1 className="text-xl font-semibold text-gray-900">Member Dashboard</h1>
               <p className="text-sm text-gray-500">Welcome, {user?.name || 'Member'}!</p>
             </div>
-            <button onClick={logout} className="p-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300">
+            <button onClick={onLogout} className="p-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300">
               Logout
             </button>
           </div>
@@ -126,7 +80,6 @@ const MemberDashboard = () => {
         <main className="py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto space-y-8">
-              
               <Card>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Currently Stocked Items</h2>
                 <p className="text-gray-600 mb-6">Search for an item to see if we have it. If something is out of stock, let the steward know.</p>
@@ -151,7 +104,7 @@ const MemberDashboard = () => {
                                 <p className="font-medium text-gray-800">{itemName}</p>
                                 <Button
                                   variant="secondary"
-                                  onClick={() => handleReportOutOfStock(itemName)}
+                                  onClick={() => onReportOutOfStock(itemName)}
                                   disabled={isReported}
                                   className="text-xs px-3 py-1 flex-shrink-0"
                                 >
@@ -168,7 +121,6 @@ const MemberDashboard = () => {
                   )}
                 </div>
               </Card>
-
               <Card>
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -177,20 +129,18 @@ const MemberDashboard = () => {
                   </div>
                   <Button onClick={() => setIsSuggestionModalOpen(true)}>Suggest an Item</Button>
                 </div>
-
                 <div className="space-y-3">
                   {suggestions.length > 0 ? (
                     suggestions.map(suggestion => {
                       const menuOptions = [
                         { label: 'Edit', onClick: () => handleEditSuggestion(suggestion) },
-                        { label: 'Delete', onClick: () => handleDeleteSuggestion(suggestion.$id) },
+                        { label: 'Delete', onClick: () => onDeleteSuggestion(suggestion.$id) },
                       ];
                        const statusColors = {
                         Pending: 'bg-gray-200 text-gray-800',
                         Approved: 'bg-blue-200 text-blue-800',
                         Declined: 'bg-red-200 text-red-800',
                       };
-
                       return (
                          <div key={suggestion.$id} className="p-4 bg-gray-50 rounded-lg">
                             <div className="flex justify-between items-start">
@@ -221,5 +171,3 @@ const MemberDashboard = () => {
     </>
   );
 };
-
-export default MemberDashboard;
