@@ -62,6 +62,18 @@ The application uses a serverless Appwrite Function to securely handle the user 
     1.  Adds the approved user to the `members` team.
     2.  Updates the status of the user's verification request document to "approved."
 
+#### Function Environment Variables
+For the `approveVerificationRequest` function to operate correctly, you must configure its environment variables in the Appwrite console under the function's **Settings** tab.
+
+-   **`APPWRITE_API_KEY`**: A server-side API key is required for the function's Node.js SDK to perform administrative actions. Create an API Key in the Appwrite console with the following scopes:
+    -   `teams.write`
+    -   `documents.write`
+-   **`MEMBERS_TEAM_ID`**: The ID of the `members` team.
+-   **`APPWRITE_DATABASE_ID`**: The ID of your project's database.
+-   **`REQUESTS_COLLECTION_ID`**: The ID of the `verificationRequests` collection.
+
+**Important Endpoint Note:** The function's Node.js SDK must be initialized with the same endpoint that your frontend application uses. Appwrite automatically provides an `APPWRITE_ENDPOINT` variable to the function runtime. If you are using a custom domain for your Appwrite project, you **must** override this default value in the function's settings and set it to your custom domain (e.g., `https://appwrite.yourdomain.com/v1`).
+
 ### Database Schema
 
 The database consists of five collections to organize the application's data.
