@@ -24,7 +24,9 @@
         },
         {
             "$id": "68c979090024edd1f5a1",
-            "execute": [],
+            "execute": [
+                "team:68c8699f001879f96ab5"
+            ],
             "name": "approveVerificationRequest-nyc",
             "enabled": true,
             "logging": true,
