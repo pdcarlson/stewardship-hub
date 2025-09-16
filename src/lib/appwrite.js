@@ -16,29 +16,25 @@ const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CON
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
+const REQUESTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_REQUESTS_COLLECTION_ID; // new
 const ADMIN_TEAM_ID = import.meta.env.VITE_APPWRITE_ADMIN_TEAM_ID;
-const MEMBERS_TEAM_ID = import.meta.env.VITE_APPWRITE_MEMBERS_TEAM_ID; // add new team id
+const MEMBERS_TEAM_ID = import.meta.env.VITE_APPWRITE_MEMBERS_TEAM_ID;
 
 // --- authentication ---
 export const logout = () => account.deleteSession('current');
 export const getCurrentUser = () => account.get();
 
 export const loginWithGoogle = () => {
-  // redirect to a protected route which will then handle routing to the correct dashboard
-  const successUrl = `${window.location.origin}/member`;
+  // redirect to a neutral callback page that will handle the final redirect
+  const successUrl = `${window.location.origin}/auth/callback`;
   const failureUrl = `${window.location.origin}/login`;
   
   account.createOAuth2Session('google', successUrl, failureUrl);
 };
 
-
-/**
- * checks if the current user is a member of the 'admin' team.
- * @returns {promise<boolean>}
- */
 export const isUserAdmin = async () => {
     if (!ADMIN_TEAM_ID) {
-        console.error("vite_appwrite_admin_team_id is not configured in environment variables.");
+        console.error("vite_appwrite_admin_team_id is not configured.");
         return false;
     }
     try {
@@ -50,13 +46,9 @@ export const isUserAdmin = async () => {
     }
 };
 
-/**
- * checks if the current user is a member of the 'members' team.
- * @returns {promise<boolean>}
- */
 export const isUserMember = async () => {
     if (!MEMBERS_TEAM_ID) {
-        console.error("vite_appwrite_members_team_id is not configured in environment variables.");
+        console.error("vite_appwrite_members_team_id is not configured.");
         return false;
     }
     try {
@@ -68,9 +60,40 @@ export const isUserMember = async () => {
     }
 };
 
-
 // --- user preferences ---
 export const updateUserPrefs = (prefs) => account.updatePrefs(prefs);
+
+
+// --- verification requests ---
+export const createVerificationRequest = async () => {
+  const user = await getCurrentUser();
+  const data = {
+    userId: user.$id,
+    userName: user.name,
+    status: 'pending',
+  };
+  return databases.createDocument(DB_ID, REQUESTS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const getUserVerificationRequest = async (userId) => {
+  return databases.listDocuments(DB_ID, REQUESTS_COLLECTION_ID, [
+    Query.equal('userId', userId),
+    Query.limit(1),
+  ]);
+};
+
+export const getVerificationRequests = () => {
+  // get all pending requests, sorted by oldest first
+  return databases.listDocuments(DB_ID, REQUESTS_COLLECTION_ID, [
+    Query.equal('status', 'pending'),
+    Query.orderAsc('$createdAt'),
+    Query.limit(100),
+  ]);
+};
+
+export const updateVerificationRequestStatus = (requestId, status) => {
+  return databases.updateDocument(DB_ID, REQUESTS_COLLECTION_ID, requestId, { status });
+};
 
 // --- semester config ---
 export const getSemesterConfig = async () => {

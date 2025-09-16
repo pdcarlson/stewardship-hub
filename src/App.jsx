@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import PublicDashboard from './pages/PublicDashboard';
 import PendingVerification from './pages/PendingVerification';
+import AuthCallback from './pages/AuthCallback'; // new import
 import AdminDashboardContainer from './containers/AdminDashboardContainer';
 import MemberDashboardContainer from './containers/MemberDashboardContainer';
 import AdminRoute from './components/AdminRoute';
@@ -33,6 +34,7 @@ function App() {
       {/* public routes */}
       <Route path="/" element={<PublicDashboard />} />
       <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* generic protected route for logged-in, unverified users */}
       <Route element={<ProtectedRoute />}>

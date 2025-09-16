@@ -35,6 +35,10 @@ export const AuthProvider = ({ children }) => {
         setPrefs({});
       } finally {
         setIsLoading(false);
+        // clean up the url after an oauth redirect
+        if (window.location.hash.includes('secret')) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
       }
     };
     checkUser();

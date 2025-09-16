@@ -1,7 +1,11 @@
 // /src/containers/AdminDashboardContainer.jsx
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSemesterConfig, getPurchases, updatePurchase, deletePurchase, getShoppingList, removeFromShoppingList, getSuggestions, addToShoppingList } from '../lib/appwrite';
+import { 
+  getSemesterConfig, getPurchases, updatePurchase, deletePurchase, 
+  getShoppingList, removeFromShoppingList, getSuggestions, addToShoppingList,
+  getVerificationRequests, updateVerificationRequestStatus 
+} from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 import { AdminDashboardUI } from '../pages/AdminDashboard';
 
@@ -15,21 +19,32 @@ const AdminDashboardContainer = () => {
   const [usageStats, setUsageStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [requests, setRequests] = useState([]);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [configData, purchasesData, shoppingListData, suggestionsData] = await Promise.all([
+      const [configData, purchasesData, shoppingListData, suggestionsData, requestsData] = await Promise.all([
         getSemesterConfig(),
         getPurchases(),
         getShoppingList(),
         getSuggestions(),
+        getVerificationRequests(), // fetch requests
       ]);
+      
       const purchaseDocs = purchasesData.documents;
-      setConfig(configData);
       setPurchases(purchaseDocs);
       setShoppingList(shoppingListData.documents);
       setSuggestions(suggestionsData.documents);
+      setRequests(requestsData.documents);
+      setConfig(configData);
+
+      // logic for auto-opening the modal
+      if (requestsData.total > 0) {
+        setIsVerificationModalOpen(true);
+      }
+      
       if (configData && purchaseDocs) {
         const weeklyUsage = calculateAverageWeeklyUsage(purchaseDocs, configData);
         setUsageStats(weeklyUsage);
@@ -84,6 +99,21 @@ const AdminDashboardContainer = () => {
       setError("failed to add item to shopping list.");
     }
   };
+  
+  const handleApproveRequest = (request) => {
+    // we'll build this in the next step with appwrite functions
+    alert(`Approving ${request.userName} is the next step!`);
+  };
+
+  const handleDenyRequest = async (requestId) => {
+    try {
+      await updateVerificationRequestStatus(requestId, 'denied');
+      setRequests(prev => prev.filter(req => req.$id !== requestId));
+    } catch (error) {
+      console.error('failed to deny request', error);
+      alert('could not deny request. please try again.');
+    }
+  };
 
   const handleToggleItemStatus = async (itemName, newStatus) => {
     try {
@@ -119,6 +149,12 @@ const AdminDashboardContainer = () => {
       onRemoveFromShoppingList={handleRemoveFromShoppingList}
       onReportOutOfStock={handleReportOutOfStock}
       onToggleItemStatus={handleToggleItemStatus}
+      requests={requests}
+      isVerificationModalOpen={isVerificationModalOpen}
+      onVerificationModalOpen={() => setIsVerificationModalOpen(true)}
+      onVerificationModalClose={() => setIsVerificationModalOpen(false)}
+      onApproveRequest={handleApproveRequest}
+      onDenyRequest={handleDenyRequest}
     />
   );
 };

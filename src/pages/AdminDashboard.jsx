@@ -11,6 +11,7 @@ import PurchaseForm from '../components/budget/PurchaseForm';
 import ConfigForm from '../components/budget/ConfigForm';
 import BulkImportForm from '../components/budget/BulkImportForm';
 import Button from '../components/ui/Button';
+import VerificationRequests from '../components/admin/VerificationRequests';
 
 export const AdminDashboardUI = ({
   user,
@@ -31,6 +32,12 @@ export const AdminDashboardUI = ({
   onRemoveFromShoppingList,
   onReportOutOfStock,
   onToggleItemStatus,
+  requests,
+  isVerificationModalOpen,
+  onVerificationModalOpen,
+  onVerificationModalClose,
+  onApproveRequest,
+  onDenyRequest,
 }) => {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
@@ -62,6 +69,14 @@ export const AdminDashboardUI = ({
 
   return (
     <>
+      <VerificationRequests
+        isOpen={isVerificationModalOpen}
+        onClose={onVerificationModalClose}
+        requests={requests}
+        onApprove={onApproveRequest}
+        onDeny={onDenyRequest}
+      />
+
       <Modal
         title={purchaseModalTitle}
         isOpen={isPurchaseModalOpen}
@@ -93,6 +108,11 @@ export const AdminDashboardUI = ({
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
             <div className="flex items-center space-x-2">
+              {requests.length > 0 && (
+                <Button onClick={onVerificationModalOpen} variant="secondary">
+                  Requests <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{requests.length}</span>
+                </Button>
+              )}
               <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">Bulk Import</Button>
               <Button onClick={() => setIsConfigModalOpen(true)}>Settings</Button>
               <Button onClick={() => setIsPurchaseModalOpen(true)}>New Purchase</Button>
