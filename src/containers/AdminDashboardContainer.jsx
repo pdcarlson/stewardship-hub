@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   getSemesterConfig, getPurchases, updatePurchase, deletePurchase, 
   getShoppingList, removeFromShoppingList, getSuggestions, addToShoppingList,
-  getVerificationRequests, updateVerificationRequestStatus 
+  getVerificationRequests, updateVerificationRequestStatus, executeApproveRequest
 } from '../lib/appwrite';
 import { calculateBudgetMetrics, calculateAverageWeeklyUsage } from '../lib/calculations';
 import { AdminDashboardUI } from '../pages/AdminDashboard';
@@ -30,7 +30,7 @@ const AdminDashboardContainer = () => {
         getPurchases(),
         getShoppingList(),
         getSuggestions(),
-        getVerificationRequests(), // fetch requests
+        getVerificationRequests(),
       ]);
       
       const purchaseDocs = purchasesData.documents;
@@ -40,8 +40,7 @@ const AdminDashboardContainer = () => {
       setRequests(requestsData.documents);
       setConfig(configData);
 
-      // logic for auto-opening the modal
-      if (requestsData.total > 0) {
+      if (requestsData.total > 0 && !isVerificationModalOpen) {
         setIsVerificationModalOpen(true);
       }
       
@@ -100,9 +99,27 @@ const AdminDashboardContainer = () => {
     }
   };
   
-  const handleApproveRequest = (request) => {
-    // we'll build this in the next step with appwrite functions
-    alert(`Approving ${request.userName} is the next step!`);
+  const handleApproveRequest = async (request) => {
+    if (!window.confirm(`Are you sure you want to approve ${request.userName}?`)) {
+      return;
+    }
+    
+    try {
+      const payload = {
+        userId: request.userId,
+        requestId: request.$id,
+        userEmail: request.email,
+      };
+      
+      await executeApproveRequest(payload);
+      
+      setRequests(prev => prev.filter(req => req.$id !== request.$id));
+      alert(`${request.userName} has been approved and granted member access.`);
+
+    } catch (error) {
+      console.error('failed to approve request:', error);
+      alert('there was an error approving the request. please check the function logs in appwrite.');
+    }
   };
 
   const handleDenyRequest = async (requestId) => {

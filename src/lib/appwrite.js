@@ -1,5 +1,5 @@
 // /src/lib/appwrite.js
-import { Client, Databases, Account, ID, Permission, Role, Query, Teams } from 'appwrite';
+import { Client, Databases, Account, ID, Permission, Role, Query, Teams, Functions } from 'appwrite';
 
 // --- initialization ---
 const client = new Client()
@@ -9,6 +9,7 @@ const client = new Client()
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const teams = new Teams(client);
+export const functions = new Functions(client); // add functions service
 
 // --- constants ---
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
@@ -16,7 +17,8 @@ const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CON
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
-const REQUESTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_REQUESTS_COLLECTION_ID; // new
+const REQUESTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_REQUESTS_COLLECTION_ID;
+const APPROVE_FUNCTION_ID = import.meta.env.VITE_APPWRITE_APPROVE_FUNCTION_ID;
 const ADMIN_TEAM_ID = import.meta.env.VITE_APPWRITE_ADMIN_TEAM_ID;
 const MEMBERS_TEAM_ID = import.meta.env.VITE_APPWRITE_MEMBERS_TEAM_ID;
 
@@ -25,10 +27,8 @@ export const logout = () => account.deleteSession('current');
 export const getCurrentUser = () => account.get();
 
 export const loginWithGoogle = () => {
-  // redirect to a neutral callback page that will handle the final redirect
   const successUrl = `${window.location.origin}/auth/callback`;
   const failureUrl = `${window.location.origin}/login`;
-  
   account.createOAuth2Session('google', successUrl, failureUrl);
 };
 
@@ -70,7 +70,7 @@ export const createVerificationRequest = async () => {
   const data = {
     userId: user.$id,
     userName: user.name,
-    email: user.email, // add the user's email to the request
+    email: user.email,
     status: 'pending',
   };
   return databases.createDocument(DB_ID, REQUESTS_COLLECTION_ID, ID.unique(), data);
@@ -95,6 +95,11 @@ export const getVerificationRequests = () => {
 export const updateVerificationRequestStatus = (requestId, status) => {
   return databases.updateDocument(DB_ID, REQUESTS_COLLECTION_ID, requestId, { status });
 };
+
+export const executeApproveRequest = (payload) => {
+  return functions.createExecution(APPROVE_FUNCTION_ID, JSON.stringify(payload));
+};
+
 
 // --- semester config ---
 export const getSemesterConfig = async () => {

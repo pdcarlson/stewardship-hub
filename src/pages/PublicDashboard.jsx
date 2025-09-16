@@ -8,6 +8,7 @@ import {
   dummyPurchases,
   dummyShoppingList,
   dummySuggestions,
+  dummyRequests,
   dummyUsageStats,
   dummyMetrics,
   dummyHandler,
@@ -15,7 +16,7 @@ import {
 import Button from '../components/ui/Button';
 
 const PublicDashboard = () => {
-  const [view, setView] = useState('admin'); // 'admin' or 'member'
+  const [view, setView] = useState('admin');
   const navigate = useNavigate();
 
   // create dummy user objects for prop consistency
@@ -84,6 +85,12 @@ const PublicDashboard = () => {
             onRemoveFromShoppingList={(id) => dummyHandler('remove from shopping list', id)}
             onReportOutOfStock={(item) => dummyHandler('report out of stock', item)}
             onToggleItemStatus={(item, status) => dummyHandler('toggle item status', { item, status })}
+            requests={dummyRequests}
+            isVerificationModalOpen={false}
+            onVerificationModalOpen={() => dummyHandler('open verification modal')}
+            onVerificationModalClose={() => dummyHandler('close verification modal')}
+            onApproveRequest={(req) => dummyHandler('approve request', req)}
+            onDenyRequest={(id) => dummyHandler('deny request', id)}
           />
         ) : (
           <MemberDashboardUI

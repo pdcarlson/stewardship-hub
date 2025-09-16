@@ -85,6 +85,11 @@ export const dummySuggestions = [
   { $id: 'sug3', itemName: 'Energy Drinks', reason: '', submittedBy: 'dummyUser', status: 'Declined', adminResponse: 'Not in the budget for this semester.' },
 ];
 
+export const dummyRequests = [
+  { $id: 'req1', userId: 'dummyUser1', userName: 'John Doe', email: 'john.doe@example.com', status: 'pending' },
+  { $id: 'req2', userId: 'dummyUser2', userName: 'Jane Smith', email: 'jane.smith@example.com', status: 'pending' },
+];
+
 // --- derived data ---
 
 // pre-calculate metrics and usage so the demo is fast
