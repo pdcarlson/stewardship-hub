@@ -9,7 +9,10 @@ const VerificationRequests = ({ isOpen, onClose, requests, onApprove, onDeny }) 
         <div className="space-y-4">
           {requests.map(req => (
             <div key={req.$id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-              <span className="text-gray-800">{req.userName}</span>
+              <div>
+                <p className="text-gray-800 font-medium">{req.userName}</p>
+                <p className="text-xs text-gray-500">{req.email}</p>
+              </div>
               <div className="space-x-2">
                 <Button onClick={() => onDeny(req.$id)} variant="secondary" className="text-xs px-3 py-1">
                   Deny

@@ -70,6 +70,7 @@ export const createVerificationRequest = async () => {
   const data = {
     userId: user.$id,
     userName: user.name,
+    email: user.email, // add the user's email to the request
     status: 'pending',
   };
   return databases.createDocument(DB_ID, REQUESTS_COLLECTION_ID, ID.unique(), data);
