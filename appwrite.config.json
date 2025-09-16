@@ -1,0 +1,44 @@
+{
+    "projectId": "68844659001023c6dc02",
+    "endpoint": "https://nyc.cloud.appwrite.io/v1",
+    "functions": [
+        {
+            "$id": "68c8d3b8003a46ffa42a",
+            "name": "approveVerificationRequest",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "users.read"
+            ],
+            "schedule": "",
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "path": "functions/approveVerificationRequest"
+        },
+        {
+            "$id": "68c979090024edd1f5a1",
+            "execute": [
+                "team:68c8699f001879f96ab5"
+            ],
+            "name": "approveVerificationRequest-nyc",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/approveVerificationRequest-nyc"
+        }
+    ]
+}

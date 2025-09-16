@@ -3,36 +3,52 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 import LoginPage from './pages/LoginPage';
-import AdminDashboard from './pages/AdminDashboard';
-import MemberDashboard from './pages/MemberDashboard';
+import PublicDashboard from './pages/PublicDashboard';
+import PendingVerification from './pages/PendingVerification';
+import AuthCallback from './pages/AuthCallback'; // new import
+import AdminDashboardContainer from './containers/AdminDashboardContainer';
+import MemberDashboardContainer from './containers/MemberDashboardContainer';
+import AdminRoute from './components/AdminRoute';
+import MemberRoute from './components/MemberRoute';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute'; // import the new admin route
 
-// a special component to redirect logged-in users from the root path
-const HomeRedirect = () => {
-    const { user, isAdmin, isLoading } = useAuth();
+// a special component to redirect logged-in users from the login path
+const LoginRedirect = () => {
+    const { user, isAdmin, isMember, isLoading } = useAuth();
 
     if (isLoading) return <div>Loading...</div>;
-    if (!user) return <Navigate to="/login" />;
     
-    return isAdmin ? <Navigate to="/admin" /> : <Navigate to="/member" />;
+    // if a user is logged in, send them to the correct destination
+    if (user) {
+      if (isAdmin) return <Navigate to="/admin" />;
+      if (isMember) return <Navigate to="/member" />;
+      return <Navigate to="/pending-verification" />;
+    }
+    // if no user, show the login page
+    return <LoginPage />;
 };
 
 function App() {
   return (
     <Routes>
-      {/* public route */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* public routes */}
+      <Route path="/" element={<PublicDashboard />} />
+      <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
-      {/* protected routes for any logged-in user */}
+      {/* generic protected route for logged-in, unverified users */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<HomeRedirect />} />
-        <Route path="/member" element={<MemberDashboard />} />
+        <Route path="/pending-verification" element={<PendingVerification />} />
+      </Route>
 
-        {/* protected routes for admins only */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
+      {/* protected routes for admins only */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminDashboardContainer />} />
+      </Route>
+
+      {/* protected routes for verified members */}
+      <Route element={<MemberRoute />}>
+        <Route path="/member" element={<MemberDashboardContainer />} />
       </Route>
       
       {/* add a fallback for any other path */}

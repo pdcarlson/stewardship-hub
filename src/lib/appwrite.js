@@ -1,5 +1,5 @@
 // /src/lib/appwrite.js
-import { Client, Databases, Account, ID, Permission, Role, Query, Teams } from 'appwrite';
+import { Client, Databases, Account, ID, Permission, Role, Query, Teams, Functions } from 'appwrite';
 
 // --- initialization ---
 const client = new Client()
@@ -9,6 +9,7 @@ const client = new Client()
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const teams = new Teams(client);
+export const functions = new Functions(client); // add functions service
 
 // --- constants ---
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
@@ -16,42 +17,89 @@ const SEMESTER_CONFIG_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEMESTER_CON
 const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
+const REQUESTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_REQUESTS_COLLECTION_ID;
+const APPROVE_FUNCTION_ID = import.meta.env.VITE_APPWRITE_APPROVE_FUNCTION_ID;
 const ADMIN_TEAM_ID = import.meta.env.VITE_APPWRITE_ADMIN_TEAM_ID;
+const MEMBERS_TEAM_ID = import.meta.env.VITE_APPWRITE_MEMBERS_TEAM_ID;
 
 // --- authentication ---
 export const logout = () => account.deleteSession('current');
 export const getCurrentUser = () => account.get();
 
 export const loginWithGoogle = () => {
-  // redirect to the root which will handle routing to the correct dashboard
-  const successUrl = `${window.location.origin}/`;
+  const successUrl = `${window.location.origin}/auth/callback`;
   const failureUrl = `${window.location.origin}/login`;
-  
   account.createOAuth2Session('google', successUrl, failureUrl);
 };
 
-
-/**
- * checks if the current user is a member of the 'admin' team using the team ID.
- * this method directly queries team membership for accuracy.
- * @returns {promise<boolean>}
- */
 export const isUserAdmin = async () => {
     if (!ADMIN_TEAM_ID) {
-        console.error("VITE_APPWRITE_ADMIN_TEAM_ID is not configured in environment variables.");
+        console.error("vite_appwrite_admin_team_id is not configured.");
         return false;
     }
     try {
         const userTeams = await teams.list();
         return userTeams.teams.some(team => team.$id === ADMIN_TEAM_ID);
     } catch (error) {
-        console.error("Failed to check admin status:", error);
+        console.error("failed to check admin status:", error);
+        return false;
+    }
+};
+
+export const isUserMember = async () => {
+    if (!MEMBERS_TEAM_ID) {
+        console.error("vite_appwrite_members_team_id is not configured.");
+        return false;
+    }
+    try {
+        const userTeams = await teams.list();
+        return userTeams.teams.some(team => team.$id === MEMBERS_TEAM_ID);
+    } catch (error) {
+        console.error("failed to check member status:", error);
         return false;
     }
 };
 
 // --- user preferences ---
 export const updateUserPrefs = (prefs) => account.updatePrefs(prefs);
+
+
+// --- verification requests ---
+export const createVerificationRequest = async () => {
+  const user = await getCurrentUser();
+  const data = {
+    userId: user.$id,
+    userName: user.name,
+    email: user.email,
+    status: 'pending',
+  };
+  return databases.createDocument(DB_ID, REQUESTS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const getUserVerificationRequest = async (userId) => {
+  return databases.listDocuments(DB_ID, REQUESTS_COLLECTION_ID, [
+    Query.equal('userId', userId),
+    Query.limit(1),
+  ]);
+};
+
+export const getVerificationRequests = () => {
+  // get all pending requests, sorted by oldest first
+  return databases.listDocuments(DB_ID, REQUESTS_COLLECTION_ID, [
+    Query.equal('status', 'pending'),
+    Query.orderAsc('$createdAt'),
+    Query.limit(100),
+  ]);
+};
+
+export const updateVerificationRequestStatus = (requestId, status) => {
+  return databases.updateDocument(DB_ID, REQUESTS_COLLECTION_ID, requestId, { status });
+};
+
+export const executeApproveRequest = (payload) => {
+  return functions.createExecution(APPROVE_FUNCTION_ID, JSON.stringify(payload));
+};
+
 
 // --- semester config ---
 export const getSemesterConfig = async () => {

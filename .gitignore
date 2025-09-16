@@ -25,6 +25,4 @@ dist-ssr
 
 # env variables
 .env
-
-# oauth config
-oauth
+.env.function
