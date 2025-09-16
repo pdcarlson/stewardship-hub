@@ -1,7 +1,7 @@
 // /src/context/AuthContext.jsx
 // this file creates a global state (context) for authentication.
 import { createContext, useState, useEffect, useContext } from 'react';
-import { account, isUserAdmin, updateUserPrefs } from '../lib/appwrite';
+import { account, isUserAdmin, isUserMember, updateUserPrefs } from '../lib/appwrite';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -9,6 +9,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMember, setIsMember] = useState(false); // add member status state
   const [prefs, setPrefs] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -20,12 +21,17 @@ export const AuthProvider = ({ children }) => {
         const currentUser = await account.get();
         setUser(currentUser);
         setPrefs(currentUser.prefs || {});
-        const adminStatus = await isUserAdmin();
+        
+        // check both admin and member status
+        const [adminStatus, memberStatus] = await Promise.all([isUserAdmin(), isUserMember()]);
         setIsAdmin(adminStatus);
+        setIsMember(memberStatus);
+
       } catch (error) {
-        // if no user is found, 'user' remains null.
+        // if no user is found, reset all state
         setUser(null);
         setIsAdmin(false);
+        setIsMember(false);
         setPrefs({});
       } finally {
         setIsLoading(false);
@@ -39,8 +45,11 @@ export const AuthProvider = ({ children }) => {
     const currentUser = await account.get();
     setUser(currentUser);
     setPrefs(currentUser.prefs || {});
-    const adminStatus = await isUserAdmin();
+
+    const [adminStatus, memberStatus] = await Promise.all([isUserAdmin(), isUserMember()]);
     setIsAdmin(adminStatus);
+    setIsMember(memberStatus);
+
     // redirect to the appropriate dashboard after login
     navigate(adminStatus ? '/admin' : '/member');
   };
@@ -49,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     await account.deleteSession('current');
     setUser(null);
     setIsAdmin(false);
+    setIsMember(false);
     setPrefs({});
     navigate('/login');
   };
@@ -66,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, login, logout, isLoading, prefs, updatePrefs }}>
+    <AuthContext.Provider value={{ user, isAdmin, isMember, login, logout, isLoading, prefs, updatePrefs }}>
       {children}
     </AuthContext.Provider>
   );

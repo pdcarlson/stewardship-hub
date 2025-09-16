@@ -17,6 +17,7 @@ const PURCHASES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PURCHASES_ID;
 const SUGGESTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUGGESTIONS_ID;
 const SHOPPING_LIST_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SHOPPING_LIST_ID;
 const ADMIN_TEAM_ID = import.meta.env.VITE_APPWRITE_ADMIN_TEAM_ID;
+const MEMBERS_TEAM_ID = import.meta.env.VITE_APPWRITE_MEMBERS_TEAM_ID; // add new team id
 
 // --- authentication ---
 export const logout = () => account.deleteSession('current');
@@ -32,23 +33,41 @@ export const loginWithGoogle = () => {
 
 
 /**
- * checks if the current user is a member of the 'admin' team using the team ID.
- * this method directly queries team membership for accuracy.
+ * checks if the current user is a member of the 'admin' team.
  * @returns {promise<boolean>}
  */
 export const isUserAdmin = async () => {
     if (!ADMIN_TEAM_ID) {
-        console.error("VITE_APPWRITE_ADMIN_TEAM_ID is not configured in environment variables.");
+        console.error("vite_appwrite_admin_team_id is not configured in environment variables.");
         return false;
     }
     try {
         const userTeams = await teams.list();
         return userTeams.teams.some(team => team.$id === ADMIN_TEAM_ID);
     } catch (error) {
-        console.error("Failed to check admin status:", error);
+        console.error("failed to check admin status:", error);
         return false;
     }
 };
+
+/**
+ * checks if the current user is a member of the 'members' team.
+ * @returns {promise<boolean>}
+ */
+export const isUserMember = async () => {
+    if (!MEMBERS_TEAM_ID) {
+        console.error("vite_appwrite_members_team_id is not configured in environment variables.");
+        return false;
+    }
+    try {
+        const userTeams = await teams.list();
+        return userTeams.teams.some(team => team.$id === MEMBERS_TEAM_ID);
+    } catch (error) {
+        console.error("failed to check member status:", error);
+        return false;
+    }
+};
+
 
 // --- user preferences ---
 export const updateUserPrefs = (prefs) => account.updatePrefs(prefs);
