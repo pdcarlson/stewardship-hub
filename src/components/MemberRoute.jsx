@@ -3,15 +3,24 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const MemberRoute = () => {
-  const { user, isMember, isLoading } = useAuth();
+  const { user, isMember, isAdmin, isLoading } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  // if a user is logged in and is a verified member, render the child route.
-  // otherwise, they will be redirected.
-  return user && isMember ? <Outlet /> : <Navigate to="/" />;
+  // admins can also access member pages
+  if (user && (isMember || isAdmin)) {
+    return <Outlet />;
+  }
+
+  // logged-in but not verified members go to pending page
+  if (user) {
+    return <Navigate to="/pending-verification" />;
+  }
+
+  // not logged in at all, go to login page
+  return <Navigate to="/login" />;
 };
 
 export default MemberRoute;

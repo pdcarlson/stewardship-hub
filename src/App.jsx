@@ -4,19 +4,24 @@ import { useAuth } from './context/AuthContext';
 
 import LoginPage from './pages/LoginPage';
 import PublicDashboard from './pages/PublicDashboard';
+import PendingVerification from './pages/PendingVerification';
 import AdminDashboardContainer from './containers/AdminDashboardContainer';
 import MemberDashboardContainer from './containers/MemberDashboardContainer';
 import AdminRoute from './components/AdminRoute';
 import MemberRoute from './components/MemberRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // a special component to redirect logged-in users from the login path
 const LoginRedirect = () => {
-    const { user, isAdmin, isLoading } = useAuth();
+    const { user, isAdmin, isMember, isLoading } = useAuth();
 
     if (isLoading) return <div>Loading...</div>;
-    // if a user is logged in, send them to the correct dashboard
+    
+    // if a user is logged in, send them to the correct destination
     if (user) {
-      return isAdmin ? <Navigate to="/admin" /> : <Navigate to="/member" />;
+      if (isAdmin) return <Navigate to="/admin" />;
+      if (isMember) return <Navigate to="/member" />;
+      return <Navigate to="/pending-verification" />;
     }
     // if no user, show the login page
     return <LoginPage />;
@@ -28,6 +33,11 @@ function App() {
       {/* public routes */}
       <Route path="/" element={<PublicDashboard />} />
       <Route path="/login" element={<LoginRedirect />} />
+
+      {/* generic protected route for logged-in, unverified users */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/pending-verification" element={<PendingVerification />} />
+      </Route>
 
       {/* protected routes for admins only */}
       <Route element={<AdminRoute />}>

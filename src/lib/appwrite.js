@@ -24,8 +24,8 @@ export const logout = () => account.deleteSession('current');
 export const getCurrentUser = () => account.get();
 
 export const loginWithGoogle = () => {
-  // redirect to the root which will handle routing to the correct dashboard
-  const successUrl = `${window.location.origin}/`;
+  // redirect to a protected route which will then handle routing to the correct dashboard
+  const successUrl = `${window.location.origin}/member`;
   const failureUrl = `${window.location.origin}/login`;
   
   account.createOAuth2Session('google', successUrl, failureUrl);
