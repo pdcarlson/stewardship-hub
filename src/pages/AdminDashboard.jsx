@@ -1,17 +1,18 @@
 // /src/pages/AdminDashboard.jsx
-import { useState, useMemo } from 'react';
-import BudgetDisplay from '../components/budget/BudgetDisplay';
-import PurchaseHistory from '../components/budget/PurchaseHistory';
-import UsageReport from '../components/budget/UsageReport';
-import ShoppingList from '../components/budget/ShoppingList';
-import SuggestionList from '../components/suggestions/SuggestionList';
-import InventoryManager from '../components/budget/InventoryManager';
-import Modal from '../components/ui/Modal';
-import PurchaseForm from '../components/budget/PurchaseForm';
-import ConfigForm from '../components/budget/ConfigForm';
-import BulkImportForm from '../components/budget/BulkImportForm';
-import Button from '../components/ui/Button';
-import VerificationRequests from '../components/admin/VerificationRequests';
+import { useState, useMemo } from "react";
+import BudgetDisplay from "../components/budget/BudgetDisplay";
+import PurchaseHistory from "../components/budget/PurchaseHistory";
+import UsageReport from "../components/budget/UsageReport";
+import ShoppingList from "../components/budget/ShoppingList";
+import SuggestionList from "../components/suggestions/SuggestionList";
+import InventoryManager from "../components/budget/InventoryManager";
+import Modal from "../components/ui/Modal";
+import PurchaseForm from "../components/budget/PurchaseForm";
+import ConfigForm from "../components/budget/ConfigForm";
+import BulkImportForm from "../components/budget/BulkImportForm";
+import Button from "../components/ui/Button";
+import VerificationRequests from "../components/admin/VerificationRequests";
+import WeeklyReportGenerator from "../components/admin/WeeklyReportGenerator"; // import the new component
 
 export const AdminDashboardUI = ({
   user,
@@ -58,11 +59,13 @@ export const AdminDashboardUI = ({
   };
 
   const uniqueItemNames = useMemo(() => {
-    return [...new Set(purchases.map(p => p.itemName).sort())];
+    return [...new Set(purchases.map((p) => p.itemName).sort())];
   }, [purchases]);
-  
+
   const isBudgetVisible = prefs.isBudgetVisible ?? true;
-  const purchaseModalTitle = editingPurchase ? 'Edit Purchase' : 'Log a New Purchase';
+  const purchaseModalTitle = editingPurchase
+    ? "Edit Purchase"
+    : "Log a New Purchase";
 
   if (isLoading) return <div className="p-8">Loading Dashboard...</div>;
   if (error) return <div className="p-8 text-red-500">{error}</div>;
@@ -92,11 +95,19 @@ export const AdminDashboardUI = ({
         />
       </Modal>
 
-      <Modal title="Semester Settings" isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)}>
+      <Modal
+        title="Semester Settings"
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+      >
         <ConfigForm config={config} onSuccess={handleSuccess} />
       </Modal>
 
-      <Modal title="Bulk Import Purchases" isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)}>
+      <Modal
+        title="Bulk Import Purchases"
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+      >
         <BulkImportForm onSuccess={handleSuccess} />
       </Modal>
 
@@ -104,20 +115,41 @@ export const AdminDashboardUI = ({
         <header className="bg-[#1f2937] shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
             <div>
-              <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
+              <h1 className="text-xl font-semibold text-white">
+                Admin Dashboard
+              </h1>
               <p className="text-sm text-gray-300">Welcome, {user?.name}!</p>
             </div>
             <div className="flex items-center space-x-2">
               {requests.length > 0 && (
                 <Button onClick={onVerificationModalOpen} variant="secondary">
-                  Requests <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{requests.length}</span>
+                  Requests{" "}
+                  <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                    {requests.length}
+                  </span>
                 </Button>
               )}
-              <Button onClick={() => setIsImportModalOpen(true)} variant="secondary">Bulk Import</Button>
-              {/* updated buttons */}
-              <Button onClick={() => setIsConfigModalOpen(true)} variant="secondary">Settings</Button>
-              <Button onClick={() => setIsPurchaseModalOpen(true)} variant="secondary">New Purchase</Button>
-              <Button onClick={onLogout} variant="secondary">Logout</Button>
+              <Button
+                onClick={() => setIsImportModalOpen(true)}
+                variant="secondary"
+              >
+                Bulk Import
+              </Button>
+              <Button
+                onClick={() => setIsConfigModalOpen(true)}
+                variant="secondary"
+              >
+                Settings
+              </Button>
+              <Button
+                onClick={() => setIsPurchaseModalOpen(true)}
+                variant="secondary"
+              >
+                New Purchase
+              </Button>
+              <Button onClick={onLogout} variant="secondary">
+                Logout
+              </Button>
             </div>
           </div>
         </header>
@@ -128,17 +160,25 @@ export const AdminDashboardUI = ({
               <BudgetDisplay
                 metrics={metrics}
                 isBudgetVisible={isBudgetVisible}
-                onToggleVisibility={() => onUpdatePrefs({ isBudgetVisible: !isBudgetVisible })}
+                onToggleVisibility={() =>
+                  onUpdatePrefs({ isBudgetVisible: !isBudgetVisible })
+                }
               />
             )}
-            <ShoppingList items={shoppingList} onRemove={onRemoveFromShoppingList} />
-            <InventoryManager 
-              purchases={purchases} 
-              shoppingList={shoppingList} 
-              onReportItem={onReportOutOfStock} 
+            <ShoppingList
+              items={shoppingList}
+              onRemove={onRemoveFromShoppingList}
+            />
+            <InventoryManager
+              purchases={purchases}
+              shoppingList={shoppingList}
+              onReportItem={onReportOutOfStock}
             />
             <SuggestionList suggestions={suggestions} onUpdate={onFetchData} />
-            <UsageReport usageStats={usageStats} onToggleItemStatus={onToggleItemStatus} />
+            <UsageReport
+              usageStats={usageStats}
+              onToggleItemStatus={onToggleItemStatus}
+            />
             <PurchaseHistory
               purchases={purchases}
               onEdit={handleEditPurchase}
