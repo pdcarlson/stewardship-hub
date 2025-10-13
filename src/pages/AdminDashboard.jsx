@@ -12,7 +12,6 @@ import ConfigForm from "../components/budget/ConfigForm";
 import BulkImportForm from "../components/budget/BulkImportForm";
 import Button from "../components/ui/Button";
 import VerificationRequests from "../components/admin/VerificationRequests";
-import WeeklyReportGenerator from "../components/admin/WeeklyReportGenerator"; // import the new component
 
 export const AdminDashboardUI = ({
   user,
